@@ -2,7 +2,8 @@
 	"easycom": {
 		"^u-(.*)": "@/uview-ui/components/u-$1/u-$1.vue"
 	},
-	"pages": [{
+	"pages": [
+		{
 			"path": "pages/login/login",
 			"style": {
 				"navigationStyle": "custom",
@@ -13,6 +14,18 @@
 				}
 			}
 
+		},
+		{
+			"path": "pages/login/register",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		
 		}, 
 		{
 			"path": "pages/live/gameBjlAndLh",
