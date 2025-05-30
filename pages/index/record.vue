@@ -11,7 +11,7 @@
 	width="98%"
     height="1200" 
 	@close="closeModel">
-        <view class="record_pop daxigua">
+        <view class="record_pop daxigua u-mode-center-box">
             <view class="record_title">
                 {{indexLocales.history}}
             </view>

@@ -120,9 +120,6 @@
 				<iframe class="live-details live-details-lz" id="live_details_lz" name="liveDetailsLz" :src="`${lzUrl}?tableId=${tableId}&user_id=${userInformation.id}`" ></iframe>
 			</view>
 			<!-- 露珠 结束 -->
-			
-			
-					
 					
 		</view>
 	</view>

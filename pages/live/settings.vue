@@ -20,7 +20,7 @@
 		
 		<!-- 消息展示 开始  -->
 		<u-popup v-model="show_message" mode="center" width="80%" border-radius="14" height="60%" top="40%">
-			<view style="padding-top: 5%; padding-left: 5%; padding-right: 5%; padding-bottom: 1%; color: white;">
+			<view style="padding-top: 5%; padding-left: 5%; padding-right: 5%; padding-bottom: 1%; ">
 				<scroll-view scroll-y="true" style="height: 100%;" v-if="this.msgTypeNow == 'taihong'" >
 					<view class="settings-msg" v-for="msg in msgContent" :key="msg.name">
 						{{msg.title}}:   {{msg.content}}
@@ -382,6 +382,7 @@
 		margin-bottom: 8rpx;
 	}
 	.settings-content {
+		background-color: black;
 		.set-item {
 			height: 80rpx;
 			display: flex;
