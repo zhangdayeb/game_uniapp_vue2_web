@@ -28,173 +28,78 @@
 				</view>
 			</view>
 		</view>
-		<view class="user-section">
-			<view class="user-panel">
-				<view class="user-tabs">
-					<view class="user-tab-item" :class="userPage.pageName == userTabPage ? 'user-tab-item-active' : ''"
-						v-for="(userPage, index) in userTabPageList" :key="index" @tap="switchPage(userPage.pageName)">
-						<view class="user-tab-item-body">
-							<!-- <u-icon :name="userPage.icon" size="40"></u-icon> -->
-							<view>{{ userPage.name }}</view>
-							<view class="user-tab-line" v-if="userPage.pageName == userTabPage">
-								
-							</view>
-						</view>
-					</view>
-				</view>
-				
-				<view class="user-info-body">
-					<view class="info-btns" style="color: #FFFFFF; display: none;">
-						{{timeSub}}
-					</view>
-					<view class="info-btns" v-if="userTabPage == 'account'">
-						<view class="info-btn" :class="accountPage == 'baseSet' ? 'info-btn-active' : ''" v-if="loginUserInfo.is_fictitious == 0">
-							<view class="btn-text" @click="accountPage = 'baseSet'">{{userLocales.accountSettings}}</view>
-						</view>
-						<view class="info-btn" :class="accountPage == 'safety' ? 'info-btn-active' : ''"  v-if="loginUserInfo.is_fictitious == 0">
-							<view class="btn-text" @click="accountPage = 'safety'">{{userLocales.security}}</view>
-						</view>
-						<view class="info-btn" :class="accountPage == 'problem' ? 'info-btn-active' : ''" v-if="loginUserInfo.is_fictitious == 0">
-							<view class="btn-text" @click="accountPage = 'problem'">{{userLocales.solution}}</view>
-						</view>
-						<view class="" :class="accountPage == 'baseSet' ? 'info-btn-out' : ''" v-if="loginUserInfo.is_fictitious != 0">
-							<view class="btn-text" @click="logout()">{{userLocales.logOut}}</view>
-						</view>
-					</view>
-					<view class="info-btns-date" v-if="showDateTab">
-						<view class="info-btn-his" :class="date == 'today' ? 'info-btn-his-active' : ''">
-							<view class="btn-text" :class="{'btn-text-en': $storageLan == 'en', 'btn-text-zh': $storageLan == 'zh'}" @click="date = 'today'">{{userLocales.today}}</view>
-						</view>
-						<view class="info-btn-his" :class="date == 'yesterday' ? 'info-btn-his-active' : ''">
-							<view class="btn-text" :class="{'btn-text-en': $storageLan == 'en', 'btn-text-zh': $storageLan == 'zh'}" @click="date = 'yesterday'">{{userLocales.yesterday}}</view>
-						</view>
-						<view class="info-btn-his" :class="date == 'week' ? 'info-btn-his-active' : ''">
-							<view class="btn-text" :class="{'btn-text-en': $storageLan == 'en', 'btn-text-zh': $storageLan == 'zh'}" @click="date = 'week'">{{userLocales.currentWeek}}</view>
-						</view>
-						<view class="info-btn-his" :class="date == 'month' ? 'info-btn-his-active' : ''">
-							<view class="btn-text" :class="{'btn-text-en': $storageLan == 'en', 'btn-text-zh': $storageLan == 'zh'}" @click="date = 'month'">{{userLocales.currentMonth}}</view>
-						</view>
-						<view class="info-btn-his" :class="date == 'earlier' ? 'info-btn-his-active' : ''">
-							<view class="btn-text" :class="{'btn-text-en': $storageLan == 'en', 'btn-text-zh': $storageLan == 'zh'}" @click="date = 'earlier'">{{userLocales.earlier}}</view>
-						</view>
-					</view>
-					<userAccount :page="accountPage"  v-if="userTabPage == 'account' && loginUserInfo.is_fictitious == 0"></userAccount>
-					<userWallet :date="date" :userTabPage="userTabPage" v-if="userTabPage == 'wallet'" @dateChange="setDate($event)"></userWallet>
-					<userNote :date="date" :userTabPage="userTabPage" v-if="userTabPage == 'note'" @dateChange="setDate($event)"></userNote>
-					<userLoseLoss :date="date" :userTabPage="userTabPage" v-if="userTabPage == 'loseLoss'" @dateChange="setDate($event)"></userLoseLoss>
-				
-				</view>
-			</view>
+		
+		<!-- 功能按钮区域 -->
+		<view class="function-actions">
+		  <!-- 第一行：充值、提现 -->
+		  <view class="action-row">
+		    <view class="action-btn charge-btn" @click="goToCharge">
+		      <text class="action-icon">💰</text>
+		      <text class="action-text">充值</text>
+		    </view>
+		    <view class="action-btn withdraw-btn" @click="goToWithdraw">
+		      <text class="action-icon">💸</text>
+		      <text class="action-text">提现</text>
+		    </view>
+		  </view>
+		  
+		  <!-- 第二行：提现列表、Telegram -->
+		  <view class="action-row">
+		    <view class="action-btn withdraw-list-btn" @click="goToWithdrawList">
+		      <text class="action-icon">📋</text>
+		      <text class="action-text">提现列表</text>
+		    </view>
+		    <view class="action-btn telegram-btn" @click="openTelegram">
+		      <text class="action-icon">📱</text>
+		      <text class="action-text">Telegram</text>
+		    </view>
+		  </view>
+		  
+		  <!-- 第三行：在线客服、账户管理 -->
+		  <view class="action-row">
+		    <view class="action-btn service-btn" @click="openOnlineService">
+		      <text class="action-icon">💬</text>
+		      <text class="action-text">在线客服</text>
+		    </view>
+		    <view class="action-btn settings-btn" @click="goToSettings">
+		      <text class="action-icon">⚙️</text>
+		      <text class="action-text">账户管理</text>
+		    </view>
+		  </view>
+		  
+		  <!-- 第四行：交易记录 -->
+		  <view class="action-row">
+		    <view class="action-btn records-btn" @click="goToRecords">
+		      <text class="action-icon">📊</text>
+		      <text class="action-text">交易记录</text>
+		    </view>
+		    <view class="action-btn-placeholder"></view>
+		  </view>
 		</view>
-		<!-- <view class="user-tabs">
-			<view class="user-tab-item" :class="userPage.pageName == userTabPage ? 'user-tab-item-active' : ''"
-				v-for="(userPage, index) in userTabPageList" :key="index" @tap="switchPage(userPage.pageName)">
-				<view class="user-tab-item-body">
-					<u-icon :name="userPage.icon" size="40"></u-icon>
-					<view>{{ userPage.name }}</view>
-				</view>
-			</view>
-		</view>
-
-		<view class="user-info-body">
-			<view class="info-btns" style="color: #FFFFFF; display: none;">
-				{{timeSub}}
-			</view>
-			<view class="info-btns" v-if="userTabPage == 'account'">
-				<view class="info-btn" :class="accountPage == 'baseSet' ? 'info-btn-active' : ''" v-if="loginUserInfo.is_fictitious == 0">
-					<view class="btn-text" @click="accountPage = 'baseSet'">{{userLocales.accountSettings}}</view>
-				</view>
-				<view class="info-btn" :class="accountPage == 'safety' ? 'info-btn-active' : ''"  v-if="loginUserInfo.is_fictitious == 0">
-					<view class="btn-text" @click="accountPage = 'safety'">{{userLocales.security}}</view>
-				</view>
-				<view class="info-btn" :class="accountPage == 'problem' ? 'info-btn-active' : ''" v-if="loginUserInfo.is_fictitious == 0">
-					<view class="btn-text" @click="accountPage = 'problem'">{{userLocales.solution}}</view>
-				</view>
-				<view class="info-btn" :class="accountPage == 'baseSet' ? 'info-btn-active' : ''" v-if="loginUserInfo.is_fictitious != 0">
-					<view class="btn-text" @click="logout()">{{userLocales.logOut}}</view>
-				</view>
-			</view>
-			<view class="info-btns-date" v-if="showDateTab">
-				<view class="info-btn" :class="date == 'today' ? 'info-btn-active' : ''">
-					<view class="btn-text" :class="{'btn-text-en': $storageLan == 'en', 'btn-text-zh': $storageLan == 'zh'}" @click="date = 'today'">{{userLocales.today}}</view>
-				</view>
-				<view class="info-btn" :class="date == 'yesterday' ? 'info-btn-active' : ''">
-					<view class="btn-text" :class="{'btn-text-en': $storageLan == 'en', 'btn-text-zh': $storageLan == 'zh'}" @click="date = 'yesterday'">{{userLocales.yesterday}}</view>
-				</view>
-				<view class="info-btn" :class="date == 'week' ? 'info-btn-active' : ''">
-					<view class="btn-text" :class="{'btn-text-en': $storageLan == 'en', 'btn-text-zh': $storageLan == 'zh'}" @click="date = 'week'">{{userLocales.currentWeek}}</view>
-				</view>
-				<view class="info-btn" :class="date == 'month' ? 'info-btn-active' : ''">
-					<view class="btn-text" :class="{'btn-text-en': $storageLan == 'en', 'btn-text-zh': $storageLan == 'zh'}" @click="date = 'month'">{{userLocales.currentMonth}}</view>
-				</view>
-				<view class="info-btn" :class="date == 'earlier' ? 'info-btn-active' : ''">
-					<view class="btn-text" :class="{'btn-text-en': $storageLan == 'en', 'btn-text-zh': $storageLan == 'zh'}" @click="date = 'earlier'">{{userLocales.earlier}}</view>
-				</view>
-			</view>
-			<userAccount :page="accountPage"  v-if="userTabPage == 'account' && loginUserInfo.is_fictitious == 0"></userAccount>
-			<userWallet :date="date" :userTabPage="userTabPage" v-if="userTabPage == 'wallet'" @dateChange="setDate($event)"></userWallet>
-			<userNote :date="date" :userTabPage="userTabPage" v-if="userTabPage == 'note'" @dateChange="setDate($event)"></userNote>
-			<userLoseLoss :date="date" :userTabPage="userTabPage" v-if="userTabPage == 'loseLoss'" @dateChange="setDate($event)"></userLoseLoss>
-
-		</view> -->
+		
+		<!-- 头像选择组件 -->
 		<headImg v-if="showHeadImg" @handleHadeImg="setHeadImg($event)"></headImg>
 	</view>
 </template>
 
 <script>
-	import userAccount from './userAccount.vue'
-	import userWallet from './userWallet.vue'
-	import userNote from './userNote.vue'
-	import userLoseLoss from './userLoseLoss.vue'
 	import headImg from './headImg.vue'
 	import user from "@/api/api"
 
-
 	export default {
 		components: {
-			userAccount,
-			userWallet,
-			userNote,
-			userLoseLoss,
 			headImg
 		},
 		data() {
 			return {
-				timeSub:0,
-				image:'',
-				loadingImg:'/static/img/user/header.png',
-				errorImg:'/static/img/user/header.png',
-				
-				userTabPageList: [{
-					id: 1,
-					icon: 'account',
-					name: this._i18n.messages[this.$storageLan].user.myAccountName,
-					pageName: 'account',
-				},  {
-					id: 3,
-					icon: 'order',
-					name:  this._i18n.messages[this.$storageLan].user.myBet,
-					pageName: 'note',
-				}, {
-					id: 4,
-					icon: 'moments',
-					name: this._i18n.messages[this.$storageLan].user.myWinLose,
-					pageName: 'loseLoss',
-				}, {
-					id: 2,
-					icon: 'calendar-fill',
-					name: this._i18n.messages[this.$storageLan].user.myWallet,
-					pageName: 'wallet',
-				}],
-				userTabPage: 'account',
-				accountPage: 'baseSet',
-				date: 'today', //today,yesterday,week,month
+				timeSub: 0,
+				image: '',
+				loadingImg: '/static/img/user/header.png',
+				errorImg: '/static/img/user/header.png',
 				user_name: '',
 				user_money: 0,
 				//用户登录信息
 				loginUserInfo: uni.getStorageSync('login_user_info'),
-				//显示时间tab
-				showDateTab: false,
 				//用户双语
 				userLocales: this._i18n.messages[this.$storageLan].user, 
 				//维护数据
@@ -215,6 +120,85 @@
 		},
 		methods: {
 			/**
+			 * 跳转到充值页面
+			 */
+			goToCharge() {
+				uni.navigateTo({
+					url: '/pages/user/chongzhi'
+				})
+			},
+		
+			/**
+			 * 跳转到提现页面
+			 */
+			goToWithdraw() {
+				uni.navigateTo({
+					url: '/pages/user/tixian'
+				})
+			},
+			
+			/**
+			 * 跳转到提现列表页面
+			 */
+			goToWithdrawList() {
+				uni.navigateTo({
+					url: '/pages/user/tixianlist'
+				})
+			},
+		
+			/**
+			 * 打开Telegram
+			 */
+			openTelegram() {
+				// 这里替换为实际的Telegram链接
+				const telegramUrl = 'https://t.me/your_telegram_channel'
+				//#ifdef H5
+				window.open(telegramUrl, '_blank')
+				//#endif
+				//#ifndef H5
+				uni.showToast({
+					title: '正在打开Telegram...',
+					icon: 'none'
+				})
+				// 可以使用 plus.runtime.openURL(telegramUrl) 在App中打开
+				//#endif
+			},
+		
+			/**
+			 * 打开在线客服
+			 */
+			openOnlineService() {
+				// 这里替换为实际的在线客服链接
+				const serviceUrl = 'https://your-service-url.com'
+				//#ifdef H5
+				window.open(serviceUrl, '_blank')
+				//#endif
+				//#ifndef H5
+				uni.navigateTo({
+					url: '/pages/service/online'
+				})
+				//#endif
+			},
+			
+			/**
+			 * 跳转到账户管理页面
+			 */
+			goToSettings() {
+				uni.navigateTo({
+					url: '/pages/user/settings'
+				})
+			},
+			
+			/**
+			 * 跳转到交易记录页面
+			 */
+			goToRecords() {
+				uni.navigateTo({
+					url: '/pages/user/records'
+				})
+			},
+			
+			/**
 			 * 获取整站维护通知
 			 * */
 			getNoticeList(){
@@ -227,21 +211,13 @@
 					}
 				})
 			},
-			switchPage(pageName) {
-				this.showDateTab = true
-				if(pageName == 'account' ){
-					this.showDateTab = false
-				}
-				this.userTabPage = pageName
-				// 只要切换 就重置
-				this.accountPage = 'baseSet'
-				this.date = 'today'
-			},
+			
 			pageIndexEnd(){
 				uni.navigateTo({
 					url: '/pages/index/index'
 				})
 			},
+			
 			/**
 			 * 获取用户信息
 			 * **/
@@ -260,21 +236,6 @@
 						this.$tip.alert(res.data.message);
 					}
 				})
-			},
-			//退出登录
-			logout(){
-				uni.removeStorageSync('login_user_info')
-				uni.removeStorageSync('Access-Token')
-				uni.navigateTo({
-					url: '/pages/login/login'
-				})
-			},
-			/**
-			 * 设置日期
-			 * @param e: 返回的数据 
-			 * **/
-			setDate(e){
-				this.date = ''
 			},
 			
 			/**
@@ -307,54 +268,8 @@
 		height: 100vh;
 		overflow: hidden;
 	}
-	.user-section{
-		height: calc(100% - 90rpx - 252rpx);
-		position: relative;
-		background-color: #313131;
-	}
-	.user-panel{
-		height: 100%;
-		width: 100%;
-		top: -40rpx;
-		padding-top: 60rpx;
-		position: absolute;
-		background-image: url(../../static/img/user/bgimg.png);
-		background-size: 100% 100%;
-	}
-	.slot-wrap {
-		display: flex;
-		align-items: center;
-		flex: 1;
-	}
 	
-	.user-photo{
-		height: 100%;
-		width: 100%;
-	}
-	$gradientBackground: linear-gradient(to right, #af9a6e, #f5d89a);
-	
-	.info-btn-his{
-		padding: 0 6rpx 4rpx 6rpx;
-		color: #ffffff;
-		height: 60rpx;
-		border-radius: 30rpx;
-		font-size: 12px;
-		
-		border: 1px solid #999999;
-		.btn-text {
-			width: 100%;
-			height: 52rpx;
-			line-height: 52rpx;
-			white-space: nowrap;
-			transform: scale(.9);
-		}
-	}
-	.info-btn-his-active{
-		background: linear-gradient(-90deg, #018DFE, #17C4FF);
-	}
 	.page-view {
-		// position: absolute;
-		// width: 100%;
 		height: 100%;
 		background-color: #1D1C22;
 		position: relative;
@@ -368,7 +283,6 @@
 			width: calc(100% - 40rpx);
 			color: white;
 			margin: 0 auto;
-			
 			
 			.user-box {
 				height: 100%;
@@ -399,13 +313,10 @@
 						width: 340rpx;
 						height: 40rpx;
 						border-radius: 20rpx;
-						// border: 2rpx solid #666;
 						margin-top: 8rpx;
 						padding-left: 8rpx;
 						line-height: 40rpx;
-						
 						color: #FFFFFF;
-						//text-align: center;
 						font-size: 16px;
 						font-weight: bold;
 					}
@@ -419,8 +330,6 @@
 					}
 
 					.user-amount-box {
-						
-
 						.amount {
 							margin-left: 12rpx;
 						}
@@ -430,121 +339,124 @@
 					}
 				}
 			}
-
 		}
-		.info-btn-out{
-			background-image: url(../../static/img/user/button.png);
-			background-size:100% 100%;
-			padding: 10rpx 20rpx;
-			color: white;
-			color: #ffffff;
-			height: 60rpx;
-			border-radius: 30rpx;
-			font-size: 24rpx;
-		}
-		.user-tabs {
+		
+		.user-photo{
+			height: 100%;
 			width: 100%;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			color: #ffffff;
-			border-bottom:1px solid #666666 ;
-
-			.user-tab-item {
-				width: 25%;
-				height: 88rpx;
-				text-align: center;
-				// border-right: 2rpx solid #555360;
-
-				.user-tab-item-body {
-					width: 100%;
-					height: 100%;
-					position: relative;
-				}
-			}
-
-			.user-tab-item-active {
-				color: #0392FE;
-
-				.user-tab-item-body {
-					// border-bottom: 6rpx solid;
-					// border-image: linear-gradient(to right, #0392FE, #0392FE) 30 30;
-				}
-			}
-			.user-tab-line{
-				height: 6rpx;
-				width: 90rpx;
-				position: absolute;
-				bottom: 0;
-				left: 50rpx;
-				background-color: #0392FE;
-				border-radius: 3rpx;
-			}
 		}
-
-		.user-info-body {
-			padding: 40rpx 10rpx 0 8rpx;
-			flex: 1;
-			overflow: hidden;
-			.info-btn {
-				padding:0 10rpx 4rpx 10rpx;
-
-				color: #ffffff;
-				height: 60rpx;
-				border-radius: 30rpx;
-				font-size: 24rpx;
-				border: 1px solid #999999;
-
-				.btn-text {
-					width: 100%;
-					height: 52rpx;
-					line-height: 52rpx;
-					white-space: nowrap;
-					transform: scale(.9);
-				}
-			}
-
-			.info-btn-active {
-				background: linear-gradient(-90deg, #018DFE, #17C4FF);
-				border: 1px solid #17C4FF;
-				// color: #1D1C22;
-			}
-
-			.info-btns {
-				display: flex;
-				align-items: center;
-				margin-bottom: 48rpx;
-
-				.info-btn {
-					margin-right: 20rpx;
-
-					.btn-text {
-						font-weight: 800;
-					}
-
-				}
-			}
-
-			.info-btns-date {
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				margin-bottom: 36rpx;
-
-				.btn-text {
-					transform: none;
-				}
-				.btn-text-zh{
-					padding: 0 40rpx;
-				}
-				.btn-text-en{
-					padding: 0 20rpx;
-				}
-			}
-
-
-
-		}
-
+	}
+	
+	/* ========== 功能按钮区域样式 ========== */
+	.function-actions {
+	  width: calc(100% - 40rpx);
+	  margin: 30rpx auto;
+	  padding: 40rpx;
+	  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+	  backdrop-filter: blur(10rpx);
+	  border-radius: 24rpx;
+	  border: 1rpx solid rgba(255, 255, 255, 0.2);
+	  flex: 1;
+	  overflow-y: auto;
+	}
+	
+	.action-row {
+	  display: flex;
+	  justify-content: space-between;
+	  margin-bottom: 30rpx;
+	  
+	  &:last-child {
+	    margin-bottom: 0;
+	  }
+	}
+	
+	.action-btn {
+	  flex: 1;
+	  height: 100rpx;
+	  margin: 0 15rpx;
+	  border-radius: 20rpx;
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  justify-content: center;
+	  position: relative;
+	  overflow: hidden;
+	  transition: all 0.3s ease;
+	  border: 2rpx solid rgba(255, 255, 255, 0.1);
+	  
+	  &:first-child {
+	    margin-left: 0;
+	  }
+	  
+	  &:last-child {
+	    margin-right: 0;
+	  }
+	  
+	  &:active {
+	    transform: scale(0.95);
+	  }
+	  
+	  .action-icon {
+	    font-size: 36rpx;
+	    margin-bottom: 8rpx;
+	  }
+	  
+	  .action-text {
+	    font-size: 26rpx;
+	    font-weight: 600;
+	  }
+	}
+	
+	/* 占位元素，用于最后一行的布局平衡 */
+	.action-btn-placeholder {
+	  flex: 1;
+	  margin: 0 15rpx;
+	  
+	  &:last-child {
+	    margin-right: 0;
+	  }
+	}
+	
+	/* 不同按钮的渐变色 */
+	.charge-btn {
+	  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+	  color: #ffffff;
+	  box-shadow: 0 6rpx 20rpx rgba(16, 185, 129, 0.3);
+	}
+	
+	.withdraw-btn {
+	  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+	  color: #ffffff;
+	  box-shadow: 0 6rpx 20rpx rgba(245, 158, 11, 0.3);
+	}
+	
+	.withdraw-list-btn {
+	  background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%);
+	  color: #ffffff;
+	  box-shadow: 0 6rpx 20rpx rgba(132, 204, 22, 0.3);
+	}
+	
+	.telegram-btn {
+	  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+	  color: #ffffff;
+	  box-shadow: 0 6rpx 20rpx rgba(59, 130, 246, 0.3);
+	}
+	
+	.service-btn {
+	  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+	  color: #ffffff;
+	  box-shadow: 0 6rpx 20rpx rgba(239, 68, 68, 0.3);
+	}
+	
+	.settings-btn {
+	  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+	  color: #ffffff;
+	  box-shadow: 0 6rpx 20rpx rgba(139, 92, 246, 0.3);
+	}
+	
+	.records-btn {
+	  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+	  color: #ffffff;
+	  box-shadow: 0 6rpx 20rpx rgba(6, 182, 212, 0.3);
 	}
 </style>

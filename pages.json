@@ -105,6 +105,61 @@
 			}
 		},
 		{
+			"path": "pages/user/tixian",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
+			"path": "pages/user/tixianlist",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
+			"path": "pages/user/settings",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
+			"path": "pages/user/records",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
+			"path": "pages/user/chongzhi",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
 			"path": "pages/download/download",
 			"style": {
 				"navigationBarTitleText": "银河国际娱乐",
