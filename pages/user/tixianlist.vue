@@ -61,8 +61,14 @@
 
     <!-- 记录列表 -->
     <view class="records-content">
+      <!-- 加载状态 -->
+      <view class="loading-state" v-if="loading">
+        <text class="loading-icon">⏳</text>
+        <text class="loading-text">加载中...</text>
+      </view>
+
       <!-- 空状态 -->
-      <view class="empty-state" v-if="filteredRecords.length === 0">
+      <view class="empty-state" v-else-if="withdrawalRecords.length === 0">
         <text class="empty-icon">📝</text>
         <text class="empty-text">暂无提现记录</text>
         <view class="empty-action" @click="goToWithdrawal">
@@ -74,18 +80,18 @@
       <view class="records-list" v-else>
         <view 
           class="record-item"
-          v-for="record in filteredRecords"
+          v-for="record in withdrawalRecords"
           :key="record.id"
           @click="viewDetail(record)"
         >
           <!-- 左侧图标和基本信息 -->
           <view class="record-left">
             <view class="record-icon-wrapper" :class="getStatusClass(record.status)">
-              <text class="record-icon">{{ getMethodIcon(record.method) }}</text>
+              <text class="record-icon">{{ record.method_icon }}</text>
             </view>
             <view class="record-info">
-              <text class="record-method">{{ getMethodName(record.method) }}</text>
-              <text class="record-time">{{ formatTime(record.createTime) }}</text>
+              <text class="record-method">{{ record.method_name }}</text>
+              <text class="record-time">{{ record.formatted_time }}</text>
             </view>
           </view>
 
@@ -93,7 +99,7 @@
           <view class="record-right">
             <text class="record-amount">-${{ record.amount }}</text>
             <view class="record-status" :class="getStatusClass(record.status)">
-              <text class="status-text">{{ getStatusText(record.status) }}</text>
+              <text class="status-text">{{ record.status_text }}</text>
             </view>
           </view>
 
@@ -106,11 +112,6 @@
           </view>
         </view>
       </view>
-    </view>
-
-    <!-- 加载更多 -->
-    <view class="load-more" v-if="hasMore && filteredRecords.length > 0">
-      <text class="load-text" @click="loadMore">加载更多</text>
     </view>
 
     <!-- 筛选弹窗 -->
@@ -137,22 +138,6 @@
           </view>
         </view>
 
-        <view class="filter-section">
-          <text class="section-title">提现方式</text>
-          <view class="filter-options">
-            <view 
-              class="filter-option"
-              :class="{ active: selectedMethod === method.value }"
-              v-for="method in methodOptions"
-              :key="method.value"
-              @click="selectMethod(method.value)"
-            >
-              <text class="option-icon">{{ method.icon }}</text>
-              <text class="option-text">{{ method.label }}</text>
-            </view>
-          </view>
-        </view>
-
         <view class="modal-footer">
           <view class="footer-btn reset-btn" @click="resetFilter">
             <text class="btn-text">重置</text>
@@ -167,24 +152,26 @@
 </template>
 
 <script>
+// 引入API函数
+import { getWithdrawalRecords } from '@/api/withdrawalAccount.js'
+
 export default {
-  name: 'WithdrawalRecordPage',
+  name: 'TixianList',
   
   data() {
     return {
-      // 统计数据
-      totalWithdrawal: '125,680.50',
-      pendingCount: 2,
-      monthlyWithdrawal: '8,500.00',
+      // 加载状态
+      loading: false,
+      
+      // 统计数据 - 从API获取
+      totalWithdrawal: '0.00',
+      pendingCount: 0,
+      monthlyWithdrawal: '0.00',
       
       // 筛选相关
       showFilter: false,
       activeTab: 'all',
       selectedStatus: 'all',
-      selectedMethod: 'all',
-      
-      // 分页
-      hasMore: true,
       
       // 筛选标签
       filterTabs: [
@@ -204,84 +191,71 @@ export default {
         { value: 'rejected', label: '已拒绝', icon: '❌' }
       ],
       
-      // 方式选项
-      methodOptions: [
-        { value: 'all', label: '全部方式', icon: '💳' },
-        { value: 'aba', label: 'ABA银行', icon: '🏦' },
-        { value: 'huiwang', label: '汇旺', icon: '⚡' },
-        { value: 'usdt', label: 'USDT', icon: '₿' }
-      ],
-      
-      // 提现记录数据
-      withdrawalRecords: [
-        {
-          id: '1',
-          amount: '5000.00',
-          method: 'aba',
-          status: 'processing',
-          progress: 65,
-          createTime: '2024-01-15 14:30:00',
-          remark: '正在银行处理中'
-        },
-        {
-          id: '2',
-          amount: '1200.00',
-          method: 'usdt',
-          status: 'completed',
-          createTime: '2024-01-14 09:15:00',
-          remark: '提现成功'
-        },
-        {
-          id: '3',
-          amount: '800.00',
-          method: 'huiwang',
-          status: 'pending',
-          createTime: '2024-01-13 16:45:00',
-          remark: '等待审核中'
-        },
-        {
-          id: '4',
-          amount: '3000.00',
-          method: 'aba',
-          status: 'rejected',
-          createTime: '2024-01-12 11:20:00',
-          remark: '银行账户信息有误'
-        },
-        {
-          id: '5',
-          amount: '2500.00',
-          method: 'usdt',
-          status: 'completed',
-          createTime: '2024-01-11 08:30:00',
-          remark: '提现成功'
-        },
-        {
-          id: '6',
-          amount: '600.00',
-          method: 'huiwang',
-          status: 'pending',
-          createTime: '2024-01-10 13:15:00',
-          remark: '等待审核中'
-        }
-      ]
+      // 提现记录数据 - 从API获取
+      withdrawalRecords: []
     }
   },
   
-  computed: {
-    // 筛选后的记录
-    filteredRecords() {
-      let records = this.withdrawalRecords
-      
-      // 按状态筛选
-      if (this.activeTab !== 'all') {
-        records = records.filter(record => record.status === this.activeTab)
-      }
-      
-      return records
-    }
+  /**
+   * 页面加载时获取数据
+   */
+  onLoad() {
+    this.loadWithdrawalRecords()
+  },
+  
+  /**
+   * 下拉刷新
+   */
+  onPullDownRefresh() {
+    this.loadWithdrawalRecords().finally(() => {
+      uni.stopPullDownRefresh()
+    })
   },
   
   methods: {
+    /**
+     * 加载提现记录数据
+     */
+    async loadWithdrawalRecords() {
+      try {
+        this.loading = true
+        
+        const response = await getWithdrawalRecords({
+          status: this.activeTab
+        })
+        
+        // 修正数据结构访问 - 多包了一层
+        if (response.data.code === 200) {
+          const data = response.data.data
+          
+          // 更新记录列表
+          this.withdrawalRecords = data.records || []
+          
+          // 更新统计信息
+          if (data.statistics) {
+            this.totalWithdrawal = data.statistics.total_withdrawal
+            this.pendingCount = data.statistics.pending_count
+            this.monthlyWithdrawal = data.statistics.monthly_withdrawal
+          }
+          
+          console.log('提现记录加载成功:', data)
+        } else {
+          uni.showToast({
+            title: response.data.message || '获取数据失败',
+            icon: 'none'
+          })
+        }
+      } catch (error) {
+        console.error('加载提现记录失败:', error)
+        uni.showToast({
+          title: '网络请求失败',
+          icon: 'none'
+        })
+      } finally {
+        this.loading = false
+      }
+    },
+    
     /**
      * 返回上一页
      */
@@ -307,7 +281,10 @@ export default {
      * 切换标签
      */
     switchTab(tab) {
-      this.activeTab = tab
+      if (this.activeTab !== tab) {
+        this.activeTab = tab
+        this.loadWithdrawalRecords() // 重新加载数据
+      }
     },
     
     /**
@@ -318,18 +295,10 @@ export default {
     },
     
     /**
-     * 选择方式
-     */
-    selectMethod(method) {
-      this.selectedMethod = method
-    },
-    
-    /**
      * 重置筛选
      */
     resetFilter() {
       this.selectedStatus = 'all'
-      this.selectedMethod = 'all'
     },
     
     /**
@@ -338,6 +307,7 @@ export default {
     applyFilter() {
       this.activeTab = this.selectedStatus
       this.hideFilterModal()
+      this.loadWithdrawalRecords() // 重新加载数据
     },
     
     /**
@@ -348,67 +318,19 @@ export default {
     },
     
     /**
-     * 获取方式图标
-     */
-    getMethodIcon(method) {
-      const icons = {
-        aba: '🏦',
-        huiwang: '⚡',
-        usdt: '₿'
-      }
-      return icons[method] || '💳'
-    },
-    
-    /**
-     * 获取方式名称
-     */
-    getMethodName(method) {
-      const names = {
-        aba: 'ABA银行',
-        huiwang: '汇旺',
-        usdt: 'USDT'
-      }
-      return names[method] || '未知方式'
-    },
-    
-    /**
-     * 获取状态文本
-     */
-    getStatusText(status) {
-      const texts = {
-        pending: '待审核',
-        processing: '处理中',
-        completed: '已完成',
-        rejected: '已拒绝'
-      }
-      return texts[status] || '未知状态'
-    },
-    
-    /**
-     * 格式化时间
-     */
-    formatTime(timeStr) {
-      const date = new Date(timeStr)
-      const now = new Date()
-      const diff = now - date
-      
-      if (diff < 60000) { // 1分钟内
-        return '刚刚'
-      } else if (diff < 3600000) { // 1小时内
-        return Math.floor(diff / 60000) + '分钟前'
-      } else if (diff < 86400000) { // 1天内
-        return Math.floor(diff / 3600000) + '小时前'
-      } else {
-        return timeStr.split(' ')[0] // 返回日期部分
-      }
-    },
-    
-    /**
      * 查看详情
      */
     viewDetail(record) {
+      // 可以传递记录数据或ID到详情页面
+      const recordData = encodeURIComponent(JSON.stringify({
+        id: record.id,
+        amount: record.amount,
+        status: record.status,
+        method: record.method
+      }))
+      
       uni.navigateTo({
-        url: `/pages/withdrawal/detail?id=${record.id}`
+        url: `/pages/withdrawal/detail?data=${recordData}`
       })
     },
     
@@ -419,25 +341,6 @@ export default {
       uni.navigateTo({
         url: '/pages/withdrawal/apply'
       })
-    },
-    
-    /**
-     * 加载更多
-     */
-    loadMore() {
-      uni.showLoading({
-        title: '加载中...'
-      })
-      
-      // 模拟加载
-      setTimeout(() => {
-        uni.hideLoading()
-        this.hasMore = false
-        uni.showToast({
-          title: '已加载全部数据',
-          icon: 'none'
-        })
-      }, 1000)
     }
   }
 }
@@ -602,6 +505,25 @@ export default {
 /* ========== 记录内容 ========== */
 .records-content {
   padding: 0 40rpx 120rpx;
+}
+
+/* ========== 加载状态 ========== */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120rpx 0;
+  
+  .loading-icon {
+    font-size: 60rpx;
+    margin-bottom: 20rpx;
+    opacity: 0.8;
+  }
+  
+  .loading-text {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 26rpx;
+  }
 }
 
 /* ========== 空状态 ========== */
@@ -797,25 +719,6 @@ export default {
     color: #3b82f6;
     font-size: 20rpx;
     text-align: center;
-  }
-}
-
-/* ========== 加载更多 ========== */
-.load-more {
-  padding: 40rpx 0;
-  text-align: center;
-  
-  .load-text {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 26rpx;
-    padding: 20rpx 40rpx;
-    border: 1rpx solid rgba(255, 255, 255, 0.2);
-    border-radius: 20rpx;
-    background: rgba(255, 255, 255, 0.05);
-    
-    &:active {
-      background: rgba(255, 255, 255, 0.1);
-    }
   }
 }
 

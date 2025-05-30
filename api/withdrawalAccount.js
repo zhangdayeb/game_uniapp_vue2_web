@@ -30,6 +30,13 @@ export function submitWithdrawalRequest(params) {
 
 
 
-
+/**
+ * 获取用户提现记录
+ * @param {Object} params 查询参数
+ * @param {string} params.status 状态筛选 'all'|'pending'|'processing'|'completed'|'rejected' 
+ */
+export function getWithdrawalRecords(params) {
+    return http.post('/user/withdrawal/records', params);
+}
 
 
