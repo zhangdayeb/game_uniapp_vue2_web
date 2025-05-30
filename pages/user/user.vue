@@ -106,6 +106,9 @@
 				maintainData: {},
 				//展示头部头像
 				showHeadImg: false,
+				// ========== 客服地址配置 ==========
+				appKeFuUrl: {},             // 客服地址
+				appFeiJiUrl: {},            // 飞机地址
 			};
 		},
 		onShow(){
@@ -117,6 +120,7 @@
 		},
 		mounted() {
 			this.getUserinfo();
+			this.getCustomerService();  // 获取客服信息
 		},
 		methods: {
 			/**
@@ -150,34 +154,14 @@
 			 * 打开Telegram
 			 */
 			openTelegram() {
-				// 这里替换为实际的Telegram链接
-				const telegramUrl = 'https://t.me/your_telegram_channel'
-				//#ifdef H5
-				window.open(telegramUrl, '_blank')
-				//#endif
-				//#ifndef H5
-				uni.showToast({
-					title: '正在打开Telegram...',
-					icon: 'none'
-				})
-				// 可以使用 plus.runtime.openURL(telegramUrl) 在App中打开
-				//#endif
+				this.toService(this.appFeiJiUrl)
 			},
 		
 			/**
 			 * 打开在线客服
 			 */
 			openOnlineService() {
-				// 这里替换为实际的在线客服链接
-				const serviceUrl = 'https://your-service-url.com'
-				//#ifdef H5
-				window.open(serviceUrl, '_blank')
-				//#endif
-				//#ifndef H5
-				uni.navigateTo({
-					url: '/pages/service/online'
-				})
-				//#endif
+				this.toService(this.appKeFuUrl)
 			},
 			
 			/**
@@ -196,6 +180,47 @@
 				uni.navigateTo({
 					url: '/pages/user/records'
 				})
+			},
+			
+			/**
+			 * 获取客服信息
+			 */
+			getCustomerService() {
+				user.getUserWhat({})
+					.then(res => {
+						if (res.data.code == 200) {
+							this.appKeFuUrl = res.data.data.appKeFuUrl
+							this.appFeiJiUrl = res.data.data.appFeiJiUrl
+						}
+					})
+					.catch(err => {
+						console.log(err)
+					})
+			},
+			
+			/**
+			 * 打开外部链接（仅H5）
+			 * @param {string} url - 要打开的URL
+			 */
+			toService(url) {
+				//#ifdef H5
+				window.open(url, '_blank')
+				//#endif
+				//#ifndef H5
+				// 非H5平台的处理
+				if (url) {
+					uni.showToast({
+						title: '正在打开...',
+						icon: 'none'
+					})
+					// 可以使用 plus.runtime.openURL(url) 在App中打开
+				} else {
+					uni.showToast({
+						title: '服务暂不可用',
+						icon: 'none'
+					})
+				}
+				//#endif
 			},
 			
 			/**

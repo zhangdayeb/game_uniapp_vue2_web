@@ -149,6 +149,17 @@
 			}
 		},
 		{
+			"path": "pages/user/bankbind",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
 			"path": "pages/user/chongzhi",
 			"style": {
 				"navigationStyle": "custom",

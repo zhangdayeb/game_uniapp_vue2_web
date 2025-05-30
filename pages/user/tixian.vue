@@ -1,4 +1,50 @@
-<template>
+/**
+     * 处理提现请求
+     */
+    processWithdrawal() {
+      uni.showLoading({
+        title: '提交中...'
+      })
+      
+      // ============================================
+      // 🎯 申请提现发给后端的数据结构
+      // ============================================
+      const withdrawalData = {
+        amount: this.withdrawAmount,              // 提现金额
+        account_id: this.selectedAccountId,      // 选择的账户ID
+        account_type: this.selectedAccount.account_type, // 账户类型: aba/huiwang/usdt
+        fee_amount: this.feeAmount,              // 手续费金额
+        actual_amount: this.actualAmount,        // 实际到账金额
+        fee_rate: this.feeRate,                  // 手续费率
+        // 可选字段
+        remark: '用户申请提现',                   // 备注信息
+        client_ip: '',                           // 客户端IP（可由后端获取）
+        device_info: '',                         // 设备信息（可选）
+        timestamp: Date.now()                    // 时间戳
+      }
+      
+      console.log('提现申请数据:', withdrawalData)
+      
+      // TODO: 调用真实的提现申请接口
+      // const response = await submitWithdrawalRequest(withdrawalData)
+      
+      // 模拟API请求
+      setTimeout(() => {
+        uni.hideLoading()
+        uni.showToast({
+          title: '提现申请已提交',
+          icon: 'success'
+        })
+        
+        // 重置表单
+        this.withdrawAmount = ''
+        this.selectedAccountId = ''
+        this.selectedAccount = null
+        
+        // 可以跳转到提现记录页面
+        setTimeout(() => {
+          uni.navigateTo({
+            url: '/pages/withdrawal<template>
   <!-- 提现申请页面 -->
   <view class="withdrawal-page">
     
@@ -70,67 +116,62 @@
           </view>
         </view>
 
-        <!-- 提现方式选择 -->
+        <!-- 选择提现账户 -->
         <view class="form-section">
           <view class="section-title">
             <text class="title-icon">🏦</text>
-            <text>提现方式</text>
+            <text>选择提现账户</text>
           </view>
-          <view class="payment-methods">
-            
-            <!-- ABA银行 -->
+          
+          <!-- 加载状态 -->
+          <view class="loading-accounts" v-if="accountsLoading">
+            <text class="loading-text">加载账户中...</text>
+          </view>
+          
+          <!-- 无账户提示 -->
+          <view class="no-accounts" v-else-if="userAccounts.length === 0">
+            <text class="no-accounts-icon">📝</text>
+            <text class="no-accounts-text">您还没有绑定提现账户</text>
+            <view class="bind-account-btn" @click="goToBindAccount">
+              <text class="bind-text">立即绑定</text>
+            </view>
+          </view>
+          
+          <!-- 账户列表 -->
+          <view class="payment-methods" v-else>
             <view 
               class="payment-item" 
-              :class="{ active: selectedMethod === 'aba' }"
-              @click="selectMethod('aba')"
+              :class="{ active: selectedAccountId === account.id }"
+              v-for="account in userAccounts"
+              :key="account.id"
+              @click="selectAccount(account)"
             >
               <view class="method-content">
-                <view class="method-icon aba-icon">🏦</view>
+                <view class="method-icon" :class="getAccountIconClass(account.account_type)">
+                  <text>{{ account.icon }}</text>
+                </view>
                 <view class="method-info">
-                  <text class="method-name">ABA银行</text>
-                  <text class="method-desc">柬埔寨亚洲银行</text>
+                  <view class="account-header">
+                    <text class="method-name">{{ account.display_name }}</text>
+                    <text class="default-badge" v-if="account.is_default">默认</text>
+                  </view>
+                  <text class="method-desc">{{ account.description }}</text>
                 </view>
               </view>
               <view class="method-check">
-                <text class="check-icon">{{ selectedMethod === 'aba' ? '✓' : '○' }}</text>
+                <text class="check-icon">{{ selectedAccountId === account.id ? '✓' : '○' }}</text>
               </view>
             </view>
-
-            <!-- 汇旺 -->
-            <view 
-              class="payment-item" 
-              :class="{ active: selectedMethod === 'huiwang' }"
-              @click="selectMethod('huiwang')"
-            >
-              <view class="method-content">
-                <view class="method-icon huiwang-icon">⚡</view>
-                <view class="method-info">
-                  <text class="method-name">汇旺</text>
-                  <text class="method-desc">快速到账</text>
-                </view>
-              </view>
-              <view class="method-check">
-                <text class="check-icon">{{ selectedMethod === 'huiwang' ? '✓' : '○' }}</text>
-              </view>
-            </view>
-
-            <!-- USDT -->
-            <view 
-              class="payment-item" 
-              :class="{ active: selectedMethod === 'usdt' }"
-              @click="selectMethod('usdt')"
-            >
-              <view class="method-content">
-                <view class="method-icon usdt-icon">₿</view>
-                <view class="method-info">
-                  <text class="method-name">USDT</text>
-                  <text class="method-desc">数字货币钱包</text>
-                </view>
-              </view>
-              <view class="method-check">
-                <text class="check-icon">{{ selectedMethod === 'usdt' ? '✓' : '○' }}</text>
-              </view>
-            </view>
+          </view>
+          
+          <!-- 账户统计 -->
+          <view class="account-stats" v-if="accountStats && !accountsLoading">
+            <text class="stats-text">
+              共{{ accountStats.total_count }}个账户
+              <text v-if="accountStats.aba_count > 0">｜银行{{ accountStats.aba_count }}个</text>
+              <text v-if="accountStats.huiwang_count > 0">｜汇旺{{ accountStats.huiwang_count }}个</text>
+              <text v-if="accountStats.usdt_count > 0">｜USDT{{ accountStats.usdt_count }}个</text>
+            </text>
           </view>
         </view>
 
@@ -176,6 +217,9 @@
 </template>
 
 <script>
+// 导入API接口
+import { getUserWithdrawalAccounts, submitWithdrawalRequest, getWithdrawalStats } from '@/api/withdrawalAccount.js'
+
 export default {
   name: 'WithdrawalPage',
   
@@ -187,8 +231,12 @@ export default {
       // 提现金额
       withdrawAmount: '',
       
-      // 选择的提现方式
-      selectedMethod: '',
+      // 用户账户相关
+      userAccounts: [],           // 用户绑定的账户列表
+      selectedAccountId: '',      // 选择的账户ID
+      selectedAccount: null,      // 选择的账户对象
+      accountsLoading: false,     // 账户加载状态
+      accountStats: null,         // 账户统计信息
       
       // 快速金额选项
       quickAmounts: [100, 500, 1000, 5000],
@@ -216,13 +264,100 @@ export default {
     // 是否可以提交
     canSubmit() {
       return this.withdrawAmount && 
-             this.selectedMethod && 
+             this.selectedAccountId && 
              parseFloat(this.withdrawAmount) >= 10 &&
              parseFloat(this.withdrawAmount) <= parseFloat(this.userBalance)
     }
   },
   
+  mounted() {
+    // 页面加载时获取用户账户列表和统计信息
+    this.loadUserAccounts()
+    this.loadWithdrawalStats()
+  },
+  
   methods: {
+    /**
+     * 加载用户提现账户
+     */
+    async loadUserAccounts() {
+      try {
+        this.accountsLoading = true
+        
+        const response = await getUserWithdrawalAccounts({})
+        
+        if (response.data.code === 200) {
+          this.userAccounts = response.data.data.accounts || []
+          this.accountStats = response.data.data.stats || null
+          
+          // 自动选择默认账户
+          const defaultAccount = this.userAccounts.find(account => account.is_default === 1)
+          if (defaultAccount) {
+            this.selectAccount(defaultAccount)
+          }
+        } else {
+          uni.showToast({
+            title: response.data.message || '获取账户失败',
+            icon: 'none'
+          })
+        }
+      } catch (error) {
+        console.error('获取用户账户失败:', error)
+        uni.showToast({
+          title: '网络错误，请重试',
+          icon: 'none'
+        })
+      } finally {
+        this.accountsLoading = false
+      }
+    },
+    
+    /**
+     * 选择账户
+     */
+    selectAccount(account) {
+      this.selectedAccountId = account.id
+      this.selectedAccount = account
+    },
+    
+    /**
+     * 跳转到绑定账户页面
+     */
+    goToBindAccount() {
+      uni.navigateTo({
+        url: '/pages/withdrawal/bind'
+      })
+    },
+    
+    /**
+     * 加载提现统计信息
+     */
+    async loadWithdrawalStats() {
+      try {
+        const response = await getWithdrawalStats({})
+        
+        if (response.data.code === 200) {
+          const stats = response.data.data
+          // 可以在这里更新页面显示的统计信息
+          console.log('提现统计:', stats)
+        }
+      } catch (error) {
+        console.error('获取提现统计失败:', error)
+      }
+    },
+    
+    /**
+     * 获取账户图标样式
+     */
+    getAccountIconClass(accountType) {
+      const classes = {
+        'aba': 'aba-icon',
+        'huiwang': 'huiwang-icon', 
+        'usdt': 'usdt-icon'
+      }
+      return classes[accountType] || 'default-icon'
+    },
+    
     /**
      * 返回上一页
      */
@@ -260,13 +395,6 @@ export default {
     },
     
     /**
-     * 选择提现方式
-     */
-    selectMethod(method) {
-      this.selectedMethod = method
-    },
-    
-    /**
      * 提交提现申请
      */
     submitWithdrawal() {
@@ -278,10 +406,19 @@ export default {
         return
       }
       
+      if (!this.selectedAccount) {
+        uni.showToast({
+          title: '请选择提现账户',
+          icon: 'none'
+        })
+        return
+      }
+      
       // 显示确认弹窗
+      const accountInfo = `${this.selectedAccount.display_name} - ${this.selectedAccount.description}`
       uni.showModal({
         title: '确认提现',
-        content: `提现金额：${this.withdrawAmount}$\n手续费：${this.feeAmount}$\n实际到账：${this.actualAmount}$`,
+        content: `提现金额：${this.withdrawAmount}$\n手续费：${this.feeAmount}$\n实际到账：${this.actualAmount}$\n提现账户：${accountInfo}`,
         confirmText: '确认提现',
         cancelText: '取消',
         success: (res) => {
@@ -295,30 +432,89 @@ export default {
     /**
      * 处理提现请求
      */
-    processWithdrawal() {
-      uni.showLoading({
-        title: '提交中...'
-      })
-      
-      // 模拟API请求
-      setTimeout(() => {
-        uni.hideLoading()
-        uni.showToast({
-          title: '提现申请已提交',
-          icon: 'success'
+    async processWithdrawal() {
+      try {
+        uni.showLoading({
+          title: '提交中...'
         })
         
-        // 重置表单
-        this.withdrawAmount = ''
-        this.selectedMethod = ''
+        // 构建提现数据
+        const withdrawalData = {
+          amount: this.withdrawAmount,
+          account_id: this.selectedAccountId,
+          account_type: this.selectedAccount.account_type,
+          fee_amount: this.feeAmount,
+          actual_amount: this.actualAmount,
+          remark: '用户申请提现'
+        }
         
-        // 可以跳转到提现记录页面
-        setTimeout(() => {
-          uni.navigateTo({
-            url: '/pages/withdrawal/record'
+        console.log('提现申请数据:', withdrawalData)
+        
+        // 调用提现申请接口
+        const response = await submitWithdrawalRequest(withdrawalData)
+        
+        uni.hideLoading()
+        
+        if (response.data.code === 200) {
+          const result = response.data.data
+          
+          // 显示成功信息
+          uni.showModal({
+            title: '提现申请成功',
+            content: `申请金额：${result.amount}\n手续费：${result.fee_amount}\n实际到账：${result.actual_amount}\n\n提现申请已提交，请等待审核`,
+            confirmText: '查看记录',
+            cancelText: '继续提现',
+            success: (res) => {
+              if (res.confirm) {
+                // 跳转到提现记录页面
+                uni.navigateTo({
+                  url: '/pages/withdrawal/record'
+                })
+              } else {
+                // 重置表单，继续提现
+                this.resetForm()
+                // 重新加载账户和统计信息
+                this.loadUserAccounts()
+                this.loadWithdrawalStats()
+              }
+            }
           })
-        }, 1500)
-      }, 2000)
+          
+        } else {
+          uni.showToast({
+            title: response.data.message || '提现申请失败',
+            icon: 'none',
+            duration: 3000
+          })
+        }
+        
+      } catch (error) {
+        uni.hideLoading()
+        console.error('提现申请失败:', error)
+        
+        // 解析错误信息
+        let errorMessage = '网络错误，请重试'
+        if (error.data && error.data.message) {
+          errorMessage = error.data.message
+        } else if (error.message) {
+          errorMessage = error.message
+        }
+        
+        uni.showToast({
+          title: errorMessage,
+          icon: 'none',
+          duration: 3000
+        })
+      }
+    },
+    
+    /**
+     * 重置表单
+     */
+    resetForm() {
+      this.withdrawAmount = ''
+      this.selectedAccountId = ''
+      this.selectedAccount = null
     }
   }
 }
@@ -537,6 +733,53 @@ export default {
   }
 }
 
+/* ========== 账户加载和空状态 ========== */
+.loading-accounts {
+  padding: 60rpx 0;
+  text-align: center;
+  
+  .loading-text {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 28rpx;
+  }
+}
+
+.no-accounts {
+  padding: 60rpx 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  .no-accounts-icon {
+    font-size: 60rpx;
+    margin-bottom: 20rpx;
+    opacity: 0.6;
+  }
+  
+  .no-accounts-text {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 28rpx;
+    margin-bottom: 30rpx;
+  }
+  
+  .bind-account-btn {
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    border-radius: 25rpx;
+    padding: 20rpx 40rpx;
+    
+    .bind-text {
+      color: #333333;
+      font-size: 26rpx;
+      font-weight: 600;
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
 /* ========== 支付方式选择 ========== */
 .payment-methods {
   display: flex;
@@ -616,6 +859,37 @@ export default {
     font-size: 32rpx;
     color: #ffd700;
     font-weight: bold;
+  }
+}
+
+/* ========== 账户信息样式 ========== */
+.account-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 6rpx;
+}
+
+.default-badge {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #333333;
+  font-size: 18rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 10rpx;
+  font-weight: 600;
+}
+
+.account-stats {
+  margin-top: 20rpx;
+  padding: 16rpx 20rpx;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.1);
+  
+  .stats-text {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 22rpx;
+    line-height: 1.4;
   }
 }
 

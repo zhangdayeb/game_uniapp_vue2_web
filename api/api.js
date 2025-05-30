@@ -98,6 +98,10 @@ const apiService = {
 	 */
 	getUserWhat(params) {
 		return http.post('/user/user/what', params);
+	},
+	// 获取充值信息
+	getUserDepositInfo(params) {
+		return http.post('/user/info/get_deposit_info', params);
 	}
 	
 };
