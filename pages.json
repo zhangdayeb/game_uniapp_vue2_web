@@ -1,0 +1,149 @@
+{
+	"easycom": {
+		"^u-(.*)": "@/uview-ui/components/u-$1/u-$1.vue"
+	},
+	"pages": [{
+			"path": "pages/login/login",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+
+		}, 
+		{
+			"path": "pages/live/gameBjlAndLh",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
+			"path": "pages/live/gameBjlDian",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
+			"path": "pages/live/niuniu",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
+			"path": "pages/record/record",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
+			"path": "pages/live/sangong",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		}, 
+		{
+			"path": "pages/user/user",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
+			"path": "pages/download/download",
+			"style": {
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
+			"path": "pages/maintain/maintain",
+			"style": {
+				"navigationBarTitleText": "银河国际娱乐",
+				"enablePullDownRefresh": false,
+				"app-plus":{
+					"bounce":"none"
+				}
+			}
+		},
+		{
+            "path" : "pages/service/service",
+            "style" :                                                                                    
+            {
+				// "navigationStyle": "custom",
+                "navigationBarTitleText": "银河国际娱乐",
+                "enablePullDownRefresh": false,
+				"app-plus": {
+					"titleNView": {
+						"buttons": [
+							{
+								"text": "关闭",  
+								"fontSrc": "/static/img/user/close.svg",
+								"background": "url(/static/img/user/close.svg)",
+								"fontSize": "17px",  
+								"float": "right"             
+							}
+						]
+					}
+				}
+            }
+        }
+    ],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uView",
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"backgroundColor": "#FFFFFF"
+	},
+	"tabBar": {
+		"color": "#909399",
+		"selectedColor": "#303133",
+		"backgroundColor": "#FFFFFF",
+		"borderStyle": "black"
+	}
+}
