@@ -115,24 +115,21 @@
           {{ showWinMsgText }}
         </view>
         
-        <!-- 视频控制按钮 -->
+        <!-- 视频控制按钮 - 修复：统一大小，垂直排列，右上角定位 -->
         <view class="video-controls">
           <!-- 放大缩小按钮 -->
-          <!-- 从u-icon改回image方式 -->
-          <view class="live-zoom" style="z-index: 21;">
+          <view class="control-btn" @click="handleZoom()">
             <image 
               src="/static/img/live/enlarge.svg" 
               mode="" 
               v-if="!videoEnlarge" 
-              @click="handleZoom()"
-              style="width: 48rpx; height: 48rpx;"
+              class="control-icon"
             />
             <image 
               src="/static/img/live/reduce.svg" 
               mode="" 
               v-if="videoEnlarge" 
-              @click="handleZoom()"
-              style="width: 48rpx; height: 48rpx;"
+              class="control-icon"
             />
           </view>
           
@@ -142,8 +139,7 @@
               :class="{'video-animation': startAnimation}" 
               name="reload" 
               color="#ffffbc" 
-              size="48"
-              style="width: 48rpx; height: 48rpx; display: block;"
+              size="24"
             />
           </view>
         </view>
@@ -203,7 +199,7 @@
         >
           <view class="live-loading-panel">
             <view class="">
-              {{ liveLocales.selectNetwork }},tap to reload
+              {{ liveLocales.selectNetwork }}, 点击刷新露珠
             </view>
           </view>
         </view>
@@ -213,7 +209,7 @@
           class="live-details live-details-lz" 
           id="live_details_lz" 
           name="liveDetailsLz" 
-          :src="`${lzUrl}?tableId=${tableId}&user_id=${userInformation.id}`"
+          :src="`${lzUrl}?tableId=${tableId}&user_id=${userInformation.id}&t=${Date.now()}`"
         ></iframe>
       </view>
     </view>
@@ -341,7 +337,12 @@ export default {
         lastMessageTime: 0
       },
       connectionRetryTimer: null,
-      isManualDisconnect: false // 标记是否为手动断开
+      isManualDisconnect: false ,// 标记是否为手动断开
+	  
+	  // 新增：记录已刷新露珠的局号
+      lastRefreshedBureau: null,
+      // 新增：刷新状态锁
+      isRefreshingLuzhu: false,
     }
   },
   
@@ -742,6 +743,8 @@ export default {
           this.getGameTableInfo()
           this.getGameBetCount()
           this.handleRefresh()
+          // 新增：开牌结果确认后刷新露珠
+          this.smartRefreshLuzhu(this.bureauNumber, '开牌结果确认')
         }, 5000)
       }
     },
@@ -831,7 +834,7 @@ export default {
     },
 
     /**
-     * 重新加载露珠
+     * 重新加载露珠 - 手动点击刷新
      */
     reloadLuzhu() {
       try {
@@ -844,6 +847,48 @@ export default {
         console.error('重载露珠失败:', error)
       }
     },
+
+  /**
+   * 智能刷新露珠 - 防止重复刷新
+   */
+  smartRefreshLuzhu(bureauNumber = null, reason = '') {
+    // 如果正在刷新中，跳过
+    if (this.isRefreshingLuzhu) {
+      console.log('🔄 露珠刷新中，跳过本次请求:', reason)
+      return
+    }
+    
+    // 如果提供了局号且已经刷新过，跳过
+    if (bureauNumber && this.lastRefreshedBureau === bureauNumber) {
+      console.log('🔄 局号已刷新过，跳过:', bureauNumber, reason)
+      return
+    }
+    
+    this.isRefreshingLuzhu = true
+    
+    try {
+      const lzIframe = document.getElementById('live_details_lz')
+      if (lzIframe) {
+        const timestamp = Date.now()
+        const newSrc = `${this.lzUrl}?tableId=${this.tableId}&user_id=${this.userInformation.id}&t=${timestamp}`
+        lzIframe.src = newSrc
+        
+        // 更新已刷新的局号
+        if (bureauNumber) {
+          this.lastRefreshedBureau = bureauNumber
+        }
+        
+        console.log('🔄 露珠刷新成功:', reason, '局号:', bureauNumber)
+      }
+    } catch (error) {
+      console.error('❌ 露珠刷新失败:', error)
+    } finally {
+      // 1秒后解锁
+      setTimeout(() => {
+        this.isRefreshingLuzhu = false
+      }, 1000)
+    }
+  },
     
     /**
      * 获取整站维护通知
@@ -1075,6 +1120,8 @@ export default {
       // 如果是新的一局(铺号不同)
       if (this.bureauNumber != bureau_number) {
         this.bureauNumber = bureau_number
+        console.log('🎯 新局开始，局号:', bureau_number)
+        
         let time = 2000
         
         // 延时播放不同的音效
@@ -1101,6 +1148,12 @@ export default {
               break
           }
         }, time + 5000, this.resultInfo.result.win)
+        
+        // 新增：新局开始时延迟刷新露珠，确保后台数据已更新
+        setTimeout(() => {
+          console.log('🎯 新局开始，准备刷新露珠')
+          this.smartRefreshLuzhu(bureau_number, '新局开始')
+        }, 3000)
       }
     },
     
@@ -1335,47 +1388,33 @@ page {
   }
 }
 
-/* 页面背景 */
+/* 页面背景 - 修复：不露出背景 */
 .live-page {
   position: relative;
   width: 100%;
   height: 100vh;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  background: #000; /* 黑色背景，不露出 */
   overflow: hidden;
-  
-  &::before {
-    content: " ";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: url('/static/img/login/bg1.jpg') no-repeat center center;
-    background-size: cover;
-    opacity: 0.3;
-    z-index: 0;
-  }
 }
 
-/* 主要布局样式 */
+/* 主要布局样式 - 修复：垂直挤满 */
 .live-container {
   position: relative;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  z-index: 1;
+  background: #000; /* 确保容器背景为黑色 */
 }
 
-/* 视频区域样式 */
+/* 视频区域样式 - 修复：固定高度 */
 .live-box {
   position: relative;
   width: 100%;
-  height: 56vw; /* 16:9 比例 */
-  max-height: 300px;
+  height: 56vw; /* 保持16:9比例 */
+  max-height: 280px; /* 限制最大高度 */
   overflow: hidden;
   background: #000;
-  border-radius: 8px;
-  margin: 10px;
+  flex-shrink: 0; /* 不允许收缩 */
 }
 
 .live-video {
@@ -1494,49 +1533,62 @@ page {
   }
 }
 
-/* 视频控制按钮 */
+/* 视频控制按钮 - 修复：统一大小，垂直排列，右上角定位 */
 .video-controls {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 15px;
+  right: 15px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  z-index: 20;
+  gap: 8px;
+  z-index: 30;
 }
 
 .control-btn {
-  width: 40px;
-  height: 40px;
-  background: rgba(0, 0, 0, 0.6);
+  width: 44px;
+  height: 44px;
+  background: rgba(0, 0, 0, 0.7);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.3);
   
   &:hover {
-    background: rgba(0, 0, 0, 0.8);
-    transform: scale(1.1);
+    background: rgba(0, 0, 0, 0.9);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
   }
 }
 
-/* 统计数据样式 */
+.control-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+/* 统计数据样式 - 修复：紧凑排列 */
 .live-result-detail {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.5);
-  margin: 10px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.8);
+  font-size: 13px;
   font-weight: 600;
+  flex-shrink: 0;
+  min-height: 32px;
   
   text {
     color: white;
-    margin: 0 5px;
+    margin: 0 3px;
+    font-size: 12px;
   }
 }
 
@@ -1552,15 +1604,13 @@ page {
   color: #dc1a1f !important;
 }
 
-/* 投注区域样式 */
+/* 投注区域样式 - 修复：填充剩余空间 */
 .live-bet-box {
   position: relative;
   flex: 1;
-  min-height: 200px;
-  margin: 10px;
-  border-radius: 8px;
+  min-height: 180px;
+  background: rgba(0, 0, 0, 0.9);
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.3);
 }
 
 .live-bet {
@@ -1572,31 +1622,37 @@ page {
   border: none;
   z-index: 2;
 }
-.live-zoom {
-  position: absolute;
-  z-index: 21;
-  right: 34rpx;
-  top: 20rpx;
-  width: 48rpx;
-  height: 48rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.5); /* 添加半透明背景 */
-  border-radius: 50%; /* 圆形背景 */
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-/* 露珠区域样式 */
+
+/* 露珠区域样式 - 修复：增加高度，确保完整显示 */
 .details.lz_details {
   position: relative;
-  height: 120px;
-  margin: 10px;
-  border-radius: 8px;
+  height: 140px; // 从150px增加到180px
+  min-height: 140px; // 设置最小高度
+  background: rgba(0, 0, 0, 0.9);
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1); /* 添加分隔线 */
+}
+// 响应式适配
+@media screen and (max-width: 750px) {
+  .details.lz_details {
+    height: 160px; // 小屏幕160px
+  }
 }
 
+@media screen and (max-height: 600px) {
+  .details.lz_details {
+    height: 140px; // 极小屏幕140px
+  }
+}
+
+// 横屏优化
+@media screen and (orientation: landscape) {
+  .details.lz_details {
+    height: 25vh; // 横屏时使用视口高度
+    min-height: 150px;
+  }
+}
 .live-details-lz {
   position: absolute;
   top: 0;
@@ -1612,29 +1668,35 @@ page {
   width: 100%;
   height: 1px;
   padding-top: var(--status-bar-height, 0);
+  flex-shrink: 0;
 }
 
-/* 响应式设计 */
+/* 响应式设计 - 修复：保持布局紧凑 */
 @media screen and (max-width: 750px) {
   .live-box {
     height: 60vw;
-    margin: 5px;
+    max-height: 250px;
   }
   
   .live-result-detail {
-    font-size: 12px;
-    padding: 8px;
-    margin: 5px;
-  }
-  
-  .live-bet-box,
-  .details.lz_details {
-    margin: 5px;
+    font-size: 11px;
+    padding: 6px 8px;
+    min-height: 28px;
+    
+    text {
+      font-size: 10px;
+      margin: 0 2px;
+    }
   }
   
   .control-btn {
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
+  }
+  
+  .control-icon {
+    width: 20px;
+    height: 20px;
   }
   
   .live-count-down {
@@ -1647,12 +1709,30 @@ page {
   .live-count-second {
     font-size: 16px;
   }
+  
+  .details.lz_details {
+    height: 120px; /* 小屏幕下稍微减小 */
+  }
 }
 
-/* 深色模式兼容 */
-@media (prefers-color-scheme: dark) {
-  .live-page {
-    background: linear-gradient(135deg, #0f1419 0%, #1a1a2e 100%);
+/* 小屏幕适配 */
+@media screen and (max-height: 600px) {
+  .live-box {
+    height: 45vw;
+    max-height: 200px;
+  }
+  
+  .details.lz_details {
+    height: 100px; /* 极小屏幕适配 */
+  }
+  
+  .live-result-detail {
+    padding: 4px 6px;
+    min-height: 24px;
+    
+    text {
+      font-size: 9px;
+    }
   }
 }
 
@@ -1665,6 +1745,7 @@ page {
   .live-box {
     width: 60%;
     height: 80vh;
+    max-height: none;
   }
   
   .live-bet-box {
@@ -1676,5 +1757,23 @@ page {
     width: 35%;
     height: 20vh;
   }
+  
+  .live-result-detail {
+    position: absolute;
+    bottom: 0;
+    left: 60%;
+    width: 40%;
+    flex-direction: column;
+    padding: 5px;
+  }
+}
+
+/* 确保所有内容不露出背景 */
+* {
+  box-sizing: border-box;
+}
+
+.live-container > * {
+  background-color: rgba(0, 0, 0, 0.8);
 }
 </style>
