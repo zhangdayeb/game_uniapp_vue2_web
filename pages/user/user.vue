@@ -43,37 +43,40 @@
 		    </view>
 		  </view>
 		  
-		  <!-- 第二行：提现列表、Telegram -->
+		  <!-- 第二行：提现列表、绑定账号 -->
 		  <view class="action-row">
 		    <view class="action-btn withdraw-list-btn" @click="goToWithdrawList">
 		      <text class="action-icon">📋</text>
 		      <text class="action-text">提现列表</text>
 		    </view>
+		    <view class="action-btn bind-account-btn" @click="goToBindAccount">
+		      <text class="action-icon">🔗</text>
+		      <text class="action-text">绑定账号</text>
+		    </view>
+		  </view>
+		  
+		  <!-- 第三行：Telegram、在线客服 -->
+		  <view class="action-row">
 		    <view class="action-btn telegram-btn" @click="openTelegram">
 		      <text class="action-icon">📱</text>
 		      <text class="action-text">Telegram</text>
 		    </view>
-		  </view>
-		  
-		  <!-- 第三行：在线客服、账户管理 -->
-		  <view class="action-row">
 		    <view class="action-btn service-btn" @click="openOnlineService">
 		      <text class="action-icon">💬</text>
 		      <text class="action-text">在线客服</text>
 		    </view>
+		  </view>
+		  
+		  <!-- 第四行：账户管理、交易记录 -->
+		  <view class="action-row">
 		    <view class="action-btn settings-btn" @click="goToSettings">
 		      <text class="action-icon">⚙️</text>
 		      <text class="action-text">账户管理</text>
 		    </view>
-		  </view>
-		  
-		  <!-- 第四行：交易记录 -->
-		  <view class="action-row">
 		    <view class="action-btn records-btn" @click="goToRecords">
 		      <text class="action-icon">📊</text>
 		      <text class="action-text">交易记录</text>
 		    </view>
-		    <view class="action-btn-placeholder"></view>
 		  </view>
 		</view>
 		
@@ -147,6 +150,15 @@
 			goToWithdrawList() {
 				uni.navigateTo({
 					url: '/pages/user/tixianlist'
+				})
+			},
+			
+			/**
+			 * 跳转到绑定账号页面
+			 */
+			goToBindAccount() {
+				uni.navigateTo({
+					url: '/pages/user/bankbind'
 				})
 			},
 		
@@ -432,16 +444,6 @@
 	  }
 	}
 	
-	/* 占位元素，用于最后一行的布局平衡 */
-	.action-btn-placeholder {
-	  flex: 1;
-	  margin: 0 15rpx;
-	  
-	  &:last-child {
-	    margin-right: 0;
-	  }
-	}
-	
 	/* 不同按钮的渐变色 */
 	.charge-btn {
 	  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -459,6 +461,12 @@
 	  background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%);
 	  color: #ffffff;
 	  box-shadow: 0 6rpx 20rpx rgba(132, 204, 22, 0.3);
+	}
+	
+	.bind-account-btn {
+	  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+	  color: #ffffff;
+	  box-shadow: 0 6rpx 20rpx rgba(6, 182, 212, 0.3);
 	}
 	
 	.telegram-btn {
@@ -480,8 +488,8 @@
 	}
 	
 	.records-btn {
-	  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+	  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
 	  color: #ffffff;
-	  box-shadow: 0 6rpx 20rpx rgba(6, 182, 212, 0.3);
+	  box-shadow: 0 6rpx 20rpx rgba(249, 115, 22, 0.3);
 	}
 </style>

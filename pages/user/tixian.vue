@@ -325,7 +325,7 @@ export default {
      */
     goToBindAccount() {
       uni.navigateTo({
-        url: '/pages/withdrawal/bind'
+        url: '/pages/user/bankbind'
       })
     },
     
