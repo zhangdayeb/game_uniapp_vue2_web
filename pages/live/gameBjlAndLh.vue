@@ -118,11 +118,21 @@
         <!-- 视频控制按钮 -->
         <view class="video-controls">
           <!-- 放大缩小按钮 -->
-          <view class="control-btn" @click="handleZoom()">
-            <u-icon 
-              :name="videoEnlarge ? 'minus-square' : 'plus-square'" 
-              color="#ffffbc" 
-              size="20"
+          <!-- 从u-icon改回image方式 -->
+          <view class="live-zoom" style="z-index: 21;">
+            <image 
+              src="/static/img/live/enlarge.svg" 
+              mode="" 
+              v-if="!videoEnlarge" 
+              @click="handleZoom()"
+              style="width: 48rpx; height: 48rpx;"
+            />
+            <image 
+              src="/static/img/live/reduce.svg" 
+              mode="" 
+              v-if="videoEnlarge" 
+              @click="handleZoom()"
+              style="width: 48rpx; height: 48rpx;"
             />
           </view>
           
@@ -132,7 +142,8 @@
               :class="{'video-animation': startAnimation}" 
               name="reload" 
               color="#ffffbc" 
-              size="20"
+              size="48"
+              style="width: 48rpx; height: 48rpx; display: block;"
             />
           </view>
         </view>
@@ -1561,7 +1572,21 @@ page {
   border: none;
   z-index: 2;
 }
-
+.live-zoom {
+  position: absolute;
+  z-index: 21;
+  right: 34rpx;
+  top: 20rpx;
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5); /* 添加半透明背景 */
+  border-radius: 50%; /* 圆形背景 */
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 /* 露珠区域样式 */
 .details.lz_details {
   position: relative;
