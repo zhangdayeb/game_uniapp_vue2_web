@@ -59,7 +59,7 @@
           id="live-video-near"
         >
           <iframe 
-            class="live-details" 
+			:class="['live-details', zoomClass]"
             frameborder="0" 
             scrolling="no" 
             :src="videoNear"
@@ -73,7 +73,7 @@
           id="live-video-far"
         >
           <iframe 
-            class="live-details" 
+            :class="['live-details', zoomClass]"
             frameborder="0" 
             scrolling="no" 
             :src="videoFar"
@@ -191,7 +191,7 @@
       </view>
       
       <!-- 露珠显示区域 -->
-      <view class="details lz_details">
+      <view class="lz_details">
         <!-- 露珠加载背景 -->
         <view 
           class="live-loading" 
@@ -206,7 +206,7 @@
         
         <!-- 露珠iframe -->
         <iframe 
-          class="live-details live-details-lz" 
+          class="live-details-lz" 
           id="live_details_lz" 
           name="liveDetailsLz" 
           :src="luzhuSrc"
@@ -343,10 +343,14 @@ export default {
 	  // 新增：记录已刷新露珠的局号
       lastRefreshedBureau: null,
 	  isRefreshingLuzhu:false,
-	  
+	  // 露珠刷新 动态
 	  luzhuSrc: '',
 	  luzhuKey: 1,
 	  luzhuTimestamp: Date.now(),
+	  
+	  // 视频动态缩放
+	  zoomClass: 'normal', // 默认class
+	  isRefreshingVideo:false,
     }
   },
   
@@ -482,6 +486,10 @@ export default {
   },
   
   methods: {
+	// 视频动态缩放
+	setZoom(className) {
+	  this.zoomClass = className;
+	},
     /**
      * 备用提示方法
      */
@@ -751,6 +759,7 @@ export default {
           this.handleRefresh()
           // 新增：开牌结果确认后刷新露珠
           this.smartRefreshLuzhu(this.bureauNumber, '开牌结果确认')
+		  this.smartRefreshVideo(this.bureauNumber, '视频放大')
         }, 5000)
       }
     },
@@ -890,7 +899,29 @@ export default {
       }, 25000)
     }
   },
-    
+    smartRefreshVideo(bureauNumber = null, reason = '') {
+    	console.log('视频放大.......................')
+      // 如果正在刷新中，跳过
+      if (this.isRefreshingVideo) {
+        console.log('🔄 视频放大，跳过本次请求:', reason)
+        return
+      }
+         
+      this.isRefreshingVideo = true
+      
+      try {
+		this.handleZoom("zoom-1-5")
+          console.log('🔄 视频放大:', reason, '局号:', bureauNumber)
+      } catch (error) {
+        console.error('❌ 视频放大失败:', error)
+      } finally {
+        // 1秒后解锁
+        setTimeout(() => {
+          this.isRefreshingVideo = false
+		  this.handleZoom("normal")
+        }, 5000)
+      }
+    },
     /**
      * 获取整站维护通知
      */
@@ -1426,8 +1457,15 @@ page {
   height: 100%;
   border: none;
   background: #000;
+  transition: transform 0.3s ease;
 }
-
+.normal {
+  transform: scale(1);
+}
+.zoom-1-5 {
+	transform: scale(1.5);
+	transform-origin: center center;
+}
 /* 加载动画样式 */
 .live-loading {
   position: absolute;
@@ -1619,7 +1657,7 @@ page {
 }
 
 /* 露珠区域样式 - 修复：增加高度，确保完整显示 */
-.details.lz_details {
+.lz_details {
   position: relative;
   height: 140px; // 从150px增加到180px
   min-height: 140px; // 设置最小高度
@@ -1630,28 +1668,30 @@ page {
 }
 // 响应式适配
 @media screen and (max-width: 750px) {
-  .details.lz_details {
+  .lz_details {
     height: 160px; // 小屏幕160px
   }
 }
 
 @media screen and (max-height: 600px) {
-  .details.lz_details {
+  .lz_details {
     height: 140px; // 极小屏幕140px
   }
 }
 
 // 横屏优化
 @media screen and (orientation: landscape) {
-  .details.lz_details {
+  .lz_details {
     height: 25vh; // 横屏时使用视口高度
     min-height: 150px;
   }
 }
+
 .live-details-lz {
   position: absolute;
   top: 0;
   left: 0;
+  background: #000;
   width: 100%;
   height: 100%;
   border: none;
@@ -1705,8 +1745,8 @@ page {
     font-size: 16px;
   }
   
-  .details.lz_details {
-    height: 120px; /* 小屏幕下稍微减小 */
+  .lz_details {
+    height: 140px; /* 小屏幕下稍微减小 */
   }
 }
 
@@ -1717,7 +1757,7 @@ page {
     max-height: 200px;
   }
   
-  .details.lz_details {
+  .lz_details {
     height: 100px; /* 极小屏幕适配 */
   }
   
@@ -1748,7 +1788,7 @@ page {
     height: 60vh;
   }
   
-  .details.lz_details {
+  .lz_details {
     width: 35%;
     height: 20vh;
   }

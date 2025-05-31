@@ -52,17 +52,17 @@
               class="baccaratItem" 
               v-for="(tableItem, index) in gameTable" 
               :key="index" 
-              @click="toggleChoose()"
+              @click="intoTable(tableItem)"
             >
               <!-- 台桌选择弹出菜单 开始 -->
               <view class="itemChoose" v-if="showChoose">
-                <!-- 点投选项 -->
-                <view 
+                <!-- 点投选项 -->           
+				<view 
                   class="ChooseText ChooseTextLeft" 
                   @click="intoTelTable(tableItem)"
                 >
                   {{ indexLocales.diantou }}
-                </view>
+                </view> 
                 <!-- 网投选项 -->
                 <view 
                   class="ChooseText ChooseTextRight" 
