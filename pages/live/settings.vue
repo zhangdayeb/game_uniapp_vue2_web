@@ -1,7 +1,7 @@
 <template>
 	<view>
 		<!-- 展示列表 开始  -->
-		<u-popup style="height: 390rpx;" v-model="show" mode="right" @close="closeModel" :mask="false" width="324rpx"
+		<u-popup style="height: 630rpx;" v-model="show" mode="right" @close="closeModel" :mask="false" width="324rpx"
 			:custom-style="{top: '128rpx'}">
 			<view class="settings-content">
 				<view class="set-item" v-for="(setItem, index) in settingList" :key="index"
@@ -70,41 +70,70 @@
 			return {
 				// audioHandle:audioHandle,								// 初始化 音频项目导入
 				msgTypeNow:'',
-				settingList: [{
-					name: 'volume',
-					title: this._i18n.messages[this.$storageLan].live.soundEffect,
-					is_open: uni.getStorageSync(MUSIC_TYPE.musicEffectSate) == 'off' ? false : true ,
-					is_msg: false,
-					msgType: 'closeMusic'
-				}, {
-					name: 'volume-fill',
-					title: this._i18n.messages[this.$storageLan].live.music,
-					is_open: uni.getStorageSync(MUSIC_TYPE.backgroundMusicState) == 'off' ? false : true ,
-					is_msg: false,
-					msgType: 'closeBgMusic'
-				}, 
-				// {
-				// 	name: 'moments',
-				// 	title: this._i18n.messages[this.$storageLan].live.limitRed,
-				// 	is_msg: true,
-				// 	msgType: 'taihong'
-				// }, 
-				{
-					name: 'order',
-					title: this._i18n.messages[this.$storageLan].live.betHistory,
-					is_msg: true,
-					msgType: 'jilu'
-				}, {
-					name: 'calendar',
-					title: this._i18n.messages[this.$storageLan].live.gamesRules,
-					is_msg: true,
-					msgType: 'guize'
-				}, {
-					name: 'home',
-					title: this._i18n.messages[this.$storageLan].live.backHome, 
-					is_msg: true,
-					msgType: 'home'
-				}],
+				settingList: [
+					{
+						name: 'volume',
+						title: this._i18n.messages[this.$storageLan].live.soundEffect,
+						is_open: uni.getStorageSync(MUSIC_TYPE.musicEffectSate) == 'off' ? false : true ,
+						is_msg: false,
+						msgType: 'closeMusic'
+					}, 
+					{
+						name: 'volume-fill',
+						title: this._i18n.messages[this.$storageLan].live.music,
+						is_open: uni.getStorageSync(MUSIC_TYPE.backgroundMusicState) == 'off' ? false : true ,
+						is_msg: false,
+						msgType: 'closeBgMusic'
+					}, 
+					{
+						name: 'star',
+						title: this._i18n.messages[this.$storageLan].live.qiehuanzhanghao, 
+						is_msg: true,
+						msgType: 'qiehuan'
+					},
+					{
+						name: 'star',
+						title: this._i18n.messages[this.$storageLan].live.chongzhi, 
+						is_msg: true,
+						msgType: 'chongzhi'
+					},
+					{
+						name: 'chat',
+						title: this._i18n.messages[this.$storageLan].live.kefu_feiji_url, 
+						is_msg: true,
+						msgType: 'kefu_feiji'
+					},
+					{
+						name: 'chat',
+						title: this._i18n.messages[this.$storageLan].live.kefu_web_url, 
+						is_msg: true,
+						msgType: 'kefu_web'
+					},
+					// {
+					// 	name: 'moments',
+					// 	title: this._i18n.messages[this.$storageLan].live.limitRed,
+					// 	is_msg: true,
+					// 	msgType: 'taihong'
+					// }, 
+					{
+						name: 'order',
+						title: this._i18n.messages[this.$storageLan].live.betHistory,
+						is_msg: true,
+						msgType: 'jilu'
+					}, 
+					// {
+					// 	name: 'calendar',
+					// 	title: this._i18n.messages[this.$storageLan].live.gamesRules,
+					// 	is_msg: true,
+					// 	msgType: 'guize'
+					// }, 
+					{
+						name: 'home',
+						title: this._i18n.messages[this.$storageLan].live.backHome, 
+						is_msg: true,
+						msgType: 'home'
+					},
+				],
 				//选择的设置对象
 				currentSettingItem: {},
 				show: false,
@@ -258,8 +287,6 @@
 						// 台红的业务逻辑
 						let routes = getCurrentPages();
 						let curParam = routes[routes.length - 1].options;
-						// console.log('curParam',curParam)
-						// this.getGameTable(curParam.table_id);
 					}
 					// 规则介绍
 					if (msgType == 'guize') {
@@ -280,6 +307,24 @@
 					uni.navigateTo({
 						url: '/pages/index/index'
 					})
+				}
+				if(msgType == 'chongzhi') {
+					uni.navigateTo({
+						url: '/pages/user/chongzhi'
+					})
+				}
+				if(msgType == 'qiehuan') {
+					uni.navigateTo({
+						url: '/pages/login/login'
+					})
+				}
+				if(msgType == 'kefu_feiji') {
+					var url = uni.getStorageSync('appFeiJiUrl')
+					window.open(url, '_blank')
+				}
+				if(msgType == 'kefu_web') {
+					var url = uni.getStorageSync('appKeFuUrl')
+					window.open(url, '_blank')
 				}
 			},
 			

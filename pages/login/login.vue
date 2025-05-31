@@ -363,6 +363,9 @@ export default {
           if (res.data.code == 200) {
             this.appKeFuUrl = res.data.data.appKeFuUrl
 			this.appFeiJiUrl = res.data.data.appFeiJiUrl
+			
+			uni.setStorageSync('appKeFuUrl',this.appKeFuUrl)
+			uni.setStorageSync('appFeiJiUrl',this.appFeiJiUrl)
           }
         })
         .catch(err => {

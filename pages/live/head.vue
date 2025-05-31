@@ -11,7 +11,6 @@
 						<text class="user-name-text">{{user_info.user_name}}</text>
 					</view>
 					<view class="user-amount-box">
-						<!-- <u-icon name="rmb-circle-fill" color="#ebd093" size="28" @click="handleRefresh()" ></u-icon> -->
 						<text @click="handleRefresh()" style="color:#bcbcbc">$</text>
 						<text class="amount">{{user_info.money_balance}}</text>
 						<u-icon :class="{'user-animation': startAnimation}" style="right: 8rpx; position: absolute;"
@@ -21,7 +20,6 @@
 			</view>
 			<view class="headbar-bot">
 				<view class="tableName">{{table_info.localesTitle}}: {{limitRedDataShow.min}}-{{limitRedDataShow.max}}</view>
-				<!-- <view class="limit" ></view> -->
 				<view class="onNo">{{$locales.live.bureau}}: {{tableRunInfo.bureau_number}}</view>
 			</view>
 		</view>

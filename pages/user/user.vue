@@ -78,6 +78,18 @@
 		      <text class="action-text">交易记录</text>
 		    </view>
 		  </view>
+		  
+		  <!-- 第五行：切换账号、退出登录 -->
+		  <view class="action-row">
+		    <view class="action-btn switch-account-btn" @click="switchAccount">
+		      <text class="action-icon">🔄</text>
+		      <text class="action-text">切换账号</text>
+		    </view>
+		    <view class="action-btn logout-btn" @click="logout">
+		      <text class="action-icon">🚪</text>
+		      <text class="action-text">退出登录</text>
+		    </view>
+		  </view>
 		</view>
 		
 		<!-- 头像选择组件 -->
@@ -192,6 +204,72 @@
 				uni.navigateTo({
 					url: '/pages/user/records'
 				})
+			},
+			
+			/**
+			 * 切换账号
+			 */
+			switchAccount() {
+				uni.showModal({
+					title: '切换账号',
+					content: '确认要切换到其他账号吗？',
+					showCancel: true,
+					cancelText: '取消',
+					confirmText: '确认',
+					success: (res) => {
+						if (res.confirm) {
+							// 清除当前用户登录状态，但保留登录历史
+							uni.removeStorageSync('login_user_info');
+							uni.removeStorageSync('timeSub');
+							
+							// 跳转到登录页面，可以选择其他账号登录
+							uni.reLaunch({
+								url: '/pages/login/login'
+							});
+							
+							uni.showToast({
+								title: '切换成功',
+								icon: 'success'
+							});
+						}
+					}
+				});
+			},
+			
+			/**
+			 * 退出登录
+			 */
+			logout() {
+				uni.showModal({
+					title: '退出登录',
+					content: '确认要退出登录吗？',
+					showCancel: true,
+					cancelText: '取消',
+					confirmText: '退出',
+					confirmColor: '#f56c6c',
+					success: (res) => {
+						if (res.confirm) {
+							// 清除所有登录相关的本地存储
+							uni.removeStorageSync('login_user_info');
+							uni.removeStorageSync('timeSub');
+							uni.removeStorageSync('token');
+							uni.removeStorageSync('user_id');
+							
+							// 清除其他可能的用户数据
+							uni.clearStorageSync();
+							
+							// 跳转到登录页面
+							uni.reLaunch({
+								url: '/pages/login/login'
+							});
+							
+							uni.showToast({
+								title: '退出成功',
+								icon: 'success'
+							});
+						}
+					}
+				});
 			},
 			
 			/**
@@ -491,5 +569,18 @@
 	  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
 	  color: #ffffff;
 	  box-shadow: 0 6rpx 20rpx rgba(249, 115, 22, 0.3);
+	}
+	
+	/* 新增按钮样式 */
+	.switch-account-btn {
+	  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+	  color: #ffffff;
+	  box-shadow: 0 6rpx 20rpx rgba(100, 116, 139, 0.3);
+	}
+	
+	.logout-btn {
+	  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+	  color: #ffffff;
+	  box-shadow: 0 6rpx 20rpx rgba(225, 29, 72, 0.3);
 	}
 </style>

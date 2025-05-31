@@ -49,13 +49,13 @@
                         customIcon: false,
 						localName: 'record'
                     },
-      //               {
-      //                   iconPath: "play-circle",
-      //                   selectedIconPath: "play-circle-fill",
-      //                   text: '客服',
-      //                   customIcon: false,
-						// localName: 'customService'
-      //               },
+                    {
+                        iconPath: "star",
+                        selectedIconPath: "star-fill",
+                        text: '充值',
+                        customIcon: false,
+						localName: 'chongzhi'
+                    },
 					{
 					    iconPath: "account",
 					    selectedIconPath: "account-fill",
@@ -146,23 +146,26 @@
 					this.tabActiveColor = '#F2F2F2'
 				} , 1500)
 				uni.setStorageSync('tabbar',index)
-                if(index == 2){
-                    uni.redirectTo({
-                        url: '/pages/user/user'
-                    })
-                }else if(index == 0){
+                
+				if(index == 0){
 					uni.redirectTo({
 					    url: '/pages/index/index'
 					})
-                }else if(index == 1){
+                }
+				if(index == 1){
 					url: '/pages/record/record'
 					uni.redirectTo({
 					    url: '/pages/record/record'
 					})
-                    // this.showRecord = true
-                }else if(index == 3) {
+                }
+				if(index == 2){
+				    uni.redirectTo({
+				        url: '/pages/user/chongzhi'
+				    })
+				}
+				if(index == 3) {
 					uni.redirectTo({
-					    url: '/pages/service/service'
+					    url: '/pages/user/user'
 					})
 				}
 				
