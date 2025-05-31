@@ -209,7 +209,8 @@
           class="live-details live-details-lz" 
           id="live_details_lz" 
           name="liveDetailsLz" 
-          :src="`${lzUrl}?tableId=${tableId}&user_id=${userInformation.id}&t=${Date.now()}`"
+          :src="luzhuSrc"
+          :key="luzhuKey"
         ></iframe>
       </view>
     </view>
@@ -342,6 +343,10 @@ export default {
 	  // 新增：记录已刷新露珠的局号
       lastRefreshedBureau: null,
 	  isRefreshingLuzhu:false,
+	  
+	  luzhuSrc: '',
+	  luzhuKey: 1,
+	  luzhuTimestamp: Date.now(),
     }
   },
   
@@ -398,6 +403,8 @@ export default {
    * 组件挂载
    */
   mounted() {
+	this.luzhuTimestamp = Date.now()
+	this.luzhuSrc = `${this.lzUrl}?tableId=${this.tableId}&user_id=${this.userInformation.id}&t=${this.luzhuTimestamp}`
     // 显示加载动画
     this.$refs.loading.open()
     
@@ -851,6 +858,7 @@ export default {
    * 智能刷新露珠 - 防止重复刷新
    */
   smartRefreshLuzhu(bureauNumber = null, reason = '') {
+	console.log('露珠刷新中.......................')
     // 如果正在刷新中，跳过
     if (this.isRefreshingLuzhu) {
       console.log('🔄 露珠刷新中，跳过本次请求:', reason)
