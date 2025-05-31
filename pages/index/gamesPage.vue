@@ -199,7 +199,6 @@
 <script>
 import api from "@/api/game"
 import tools from '@/common/util/tools.js'
-import { LH_URL, SocketTask } from '@/api/socket.js'
 import Loading from '@/components/loading/loading.vue'
 import configService from '@/common/service/config.service.js'
 import apiService from "../../api/api"
@@ -247,7 +246,6 @@ export default {
       counTDown: 0, // 倒计时
       
       // WebSocket相关
-      socketTask: new SocketTask(), // socket连接实例
       type_class: {}, // 游戏类型分类
       
       // 定时器
@@ -321,11 +319,6 @@ export default {
      * 清理页面资源
      */
     cleanupResources() {
-      // 清理 WebSocket 连接
-      if (this.socketTask) {
-        this.socketTask.close()
-        this.socketTask = null
-      }
       
       // 清理定时器
       if (this.temp_timer) {

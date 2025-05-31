@@ -1,17 +1,10 @@
 import configService from '@/common/service/config.service.js'
-const URL = configService.wsUrl
-const BJL_URL = configService.bjlWsUrl
-const USER_URL = configService.userWsUrl
-const LH_URL = configService.lhWsUrl
-const NN_URL = configService.nnWsUrl
-const THREE_URL = configService.threeWsUrl
 
 /**
  * 默认 socket 连接任务
  */
 class SocketTask {
-	//ws 地址
-	url = URL
+	url = ''
 	header = {
 		'content-type': 'multipart/form-data',
 	}
@@ -21,9 +14,8 @@ class SocketTask {
 	//socket是否打开连接
 	socketOpen = false
 	constructor(url, method) {
-	    this.url = url ? url : this.url,
+		this.url = url
 		this.method = method
-		console.log('ws connect',this.url)
 	}
 	//
 	setHader(header) {
@@ -81,10 +73,7 @@ class SocketTask {
 	 * 发送消息
 	 * @param {msg} 消息内容 
 	 */
-	sendMsg(msg) {
-		if(this.url == USER_URL) {
-		}
-		
+	sendMsg(msg) {	
 		this.socket.send({
 			data: JSON.stringify(msg)
 		});
@@ -119,11 +108,5 @@ class SocketTask {
 
 
 export {
-	URL,
-	BJL_URL,
-	SocketTask,
-	USER_URL,
-	LH_URL,
-	NN_URL,
-	THREE_URL,
+	SocketTask
 }

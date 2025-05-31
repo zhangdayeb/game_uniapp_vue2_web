@@ -17,19 +17,15 @@ let LH_WS_URL 		= 'wss://wsslh.wuming888.com'
 let NN_WS_URL       = 'wss://wssnn.wuming888.com'
 let THREE_WS_URL    = 'wss://wssthree.wuming888.com'
 //露珠地址  
-let LZ_BASE_URL 	= 'https://h5lz.wuming888.com/'
+let LZ_BASE_URL 	= 'https://h5lzv2.wuming888.com/'
 let LZ_NN_BASE_URL 	= 'https://h5lz.wuming888.com/'
 
-// let LZ_BJL_URL_LIST		= LZ_BASE_URL+'list_bjl_678.html'
 let LZ_BJL_URL_LIST		= LZ_BASE_URL
-//let LZ_LH_URL_LIST		= LZ_BASE_URL+'list_lh.html'
 let LZ_LH_URL_LIST		= LZ_BASE_URL
 let LZ_NN_URL_LIST 		= LZ_NN_BASE_URL+'list_niu.html'
 let LZ_THREE_URL_LIST 	= LZ_NN_BASE_URL+'list_three.html'
 
-// let LZ_BJL_URL_MAIN		= LZ_BASE_URL+'lucky6_type2.html'
 let LZ_BJL_URL_MAIN		= LZ_BASE_URL
-//let LZ_LH_URL_MAIN 		= LZ_BASE_URL+'lh_type1.html'
 let LZ_LH_URL_MAIN 		= LZ_BASE_URL
 let LZ_NN_URL_MAIN 		= LZ_NN_BASE_URL+'list_niu.html'
 let LZ_THREE_URL_MAIN 	= LZ_NN_BASE_URL+'list_three.html'
@@ -75,8 +71,6 @@ const configService = {
 	threeWsUrl: THREE_WS_URL,					// 三公ws 连接的地址
 	userWsUrl: USER_WS_URL,                     // 用户信息ws 连接的地址
 	websiteUrl: WEBSITE_URL,                    // 网站地址
-	
-	// lzDiantou:LZ_DIAN_MAIN						// 电投地址
 };
 // 默认表达
 export default configService
