@@ -341,8 +341,7 @@ export default {
 	  
 	  // 新增：记录已刷新露珠的局号
       lastRefreshedBureau: null,
-      // 新增：刷新状态锁
-      isRefreshingLuzhu: false,
+	  isRefreshingLuzhu:false,
     }
   },
   
@@ -857,13 +856,7 @@ export default {
       console.log('🔄 露珠刷新中，跳过本次请求:', reason)
       return
     }
-    
-    // 如果提供了局号且已经刷新过，跳过
-    if (bureauNumber && this.lastRefreshedBureau === bureauNumber) {
-      console.log('🔄 局号已刷新过，跳过:', bureauNumber, reason)
-      return
-    }
-    
+       
     this.isRefreshingLuzhu = true
     
     try {
@@ -886,7 +879,7 @@ export default {
       // 1秒后解锁
       setTimeout(() => {
         this.isRefreshingLuzhu = false
-      }, 1000)
+      }, 25000)
     }
   },
     
@@ -1121,9 +1114,8 @@ export default {
       if (this.bureauNumber != bureau_number) {
         this.bureauNumber = bureau_number
         console.log('🎯 新局开始，局号:', bureau_number)
-        
-        let time = 2000
-        
+		
+        let time = 2000        
         // 延时播放不同的音效
         setTimeout(() => {
           // 可在此添加音效播放逻辑
@@ -1149,11 +1141,6 @@ export default {
           }
         }, time + 5000, this.resultInfo.result.win)
         
-        // 新增：新局开始时延迟刷新露珠，确保后台数据已更新
-        setTimeout(() => {
-          console.log('🎯 新局开始，准备刷新露珠')
-          this.smartRefreshLuzhu(bureau_number, '新局开始')
-        }, 3000)
       }
     },
     
