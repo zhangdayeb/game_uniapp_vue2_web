@@ -273,7 +273,6 @@ export default {
   mounted() {
     // 页面加载时获取用户账户列表和统计信息
     this.loadUserAccounts()
-    this.loadWithdrawalStats()
   },
   
   methods: {
@@ -459,7 +458,6 @@ export default {
                 this.resetForm()
                 // 重新加载账户和统计信息
                 this.loadUserAccounts()
-                this.loadWithdrawalStats()
               }
             }
           })
