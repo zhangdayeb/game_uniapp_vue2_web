@@ -52,32 +52,44 @@
           </view>
         </view>
         
-        <!-- 近景摄像头 -->
-        <view 
-          v-if="videoEnlarge && videoNear" 
-          class="live-video" 
-          id="live-video-near"
-        >
-          <iframe 
-			:class="['live-details', zoomClass]"
-            frameborder="0" 
-            scrolling="no" 
-            :src="videoNear"
-          ></iframe>
-        </view>
-        
-        <!-- 远景摄像头 -->
-        <view 
-          v-else-if="!videoEnlarge && videoFar" 
-          class="live-video" 
-          id="live-video-far"
-        >
-          <iframe 
-            :class="['live-details', zoomClass]"
-            frameborder="0" 
-            scrolling="no" 
-            :src="videoFar"
-          ></iframe>
+        <!-- 优化后的视频容器 - 支持整体缩放效果 -->
+        <view class="video-container" :class="zoomEffectClass">
+          
+          <!-- 远景视频层 - 始终加载 -->
+          <view 
+            class="video-layer" 
+            :class="{
+              'layer-active': !videoEnlarge,
+              'layer-hidden': videoEnlarge
+            }"
+          >
+            <iframe 
+              v-if="videoFar"
+              class="live-details"
+              frameborder="0" 
+              scrolling="no" 
+              :src="videoFar"
+              @load="onVideoLoaded('far')"
+            ></iframe>
+          </view>
+          
+          <!-- 近景视频层 - 始终加载 -->
+          <view 
+            class="video-layer" 
+            :class="{
+              'layer-active': videoEnlarge,
+              'layer-hidden': !videoEnlarge
+            }"
+          >
+            <iframe 
+              v-if="videoNear"
+              class="live-details"
+              frameborder="0" 
+              scrolling="no" 
+              :src="videoNear"
+              @load="onVideoLoaded('near')"
+            ></iframe>
+          </view>
         </view>
         
         <!-- 倒计时圈圈 -->
@@ -115,9 +127,9 @@
           {{ showWinMsgText }}
         </view>
         
-        <!-- 视频控制按钮 - 修复：统一大小，垂直排列，右上角定位 -->
+        <!-- 视频控制按钮 - 保持原有功能 -->
         <view class="video-controls">
-          <!-- 放大缩小按钮 -->
+          <!-- 放大缩小按钮 - 保持远景/近景切换功能 -->
           <view class="control-btn" @click="handleZoom()">
             <image 
               src="/static/img/live/enlarge.svg" 
@@ -133,7 +145,7 @@
             />
           </view>
           
-          <!-- 刷新按钮 -->
+          <!-- 刷新按钮 - 优化为仅在必要时使用 -->
           <view class="control-btn" @tap="refreshIframe()">
             <u-icon 
               :class="{'video-animation': startAnimation}" 
@@ -299,12 +311,17 @@ export default {
       showWinMsgOpen: false, // 输赢展示
       showWinMsgText: '', // 输赢展示文本
       
-      // 视频相关
+      // 视频相关 - 优化后的状态管理
       videoLoadState: true, // 视频加载状态
-      videoEnlarge: false, // 视频远近景切换按钮
+      videoEnlarge: false, // 视频远近景切换按钮 - 保持原有功能
       videoFar: '', // 远景地址 后台获取
       videoNear: '', // 近景地址 后台获取
       startAnimation: false, // 刷新动画
+      zoomEffectClass: 'normal', // 新增：控制缩放效果
+      videoLoadStatus: { // 新增：跟踪视频加载状态
+        far: false,
+        near: false
+      },
       
       // 页面状态相关
       visibilityChangeEvent: '', // 可视页面事件
@@ -329,7 +346,7 @@ export default {
       // Socket相关
       configService: configService, // 初始化服务配置项目
       
-      // 新增：Socket相关状态
+      // Socket相关状态
       gameSocket: null,
       socketStatus: {
         isConnected: false,
@@ -338,19 +355,15 @@ export default {
         lastMessageTime: 0
       },
       connectionRetryTimer: null,
-      isManualDisconnect: false ,// 标记是否为手动断开
+      isManualDisconnect: false, // 标记是否为手动断开
 	  
-	  // 新增：记录已刷新露珠的局号
+      // 记录已刷新露珠的局号
       lastRefreshedBureau: null,
-	  isRefreshingLuzhu:false,
-	  // 露珠刷新 动态
-	  luzhuSrc: '',
-	  luzhuKey: 1,
-	  luzhuTimestamp: Date.now(),
-	  
-	  // 视频动态缩放
-	  zoomClass: 'normal', // 默认class
-	  isRefreshingVideo:false,
+      isRefreshingLuzhu: false,
+      // 露珠刷新 动态
+      luzhuSrc: '',
+      luzhuKey: 1,
+      luzhuTimestamp: Date.now(),
     }
   },
   
@@ -407,8 +420,8 @@ export default {
    * 组件挂载
    */
   mounted() {
-	this.luzhuTimestamp = Date.now()
-	this.luzhuSrc = `${this.lzUrl}?tableId=${this.tableId}&user_id=${this.userInformation.id}&t=${this.luzhuTimestamp}`
+    this.luzhuTimestamp = Date.now()
+    this.luzhuSrc = `${this.lzUrl}?tableId=${this.tableId}&user_id=${this.userInformation.id}&t=${this.luzhuTimestamp}`
     // 显示加载动画
     this.$refs.loading.open()
     
@@ -486,10 +499,6 @@ export default {
   },
   
   methods: {
-	// 视频动态缩放
-	setZoom(className) {
-	  this.zoomClass = className;
-	},
     /**
      * 备用提示方法
      */
@@ -757,9 +766,9 @@ export default {
           this.getGameTableInfo()
           this.getGameBetCount()
           this.handleRefresh()
-          // 新增：开牌结果确认后刷新露珠
+          // 🎯 关键：使用智能缩放替代原来的视频刷新
+          this.smartVideoZoom('开牌结果确认')
           this.smartRefreshLuzhu(this.bureauNumber, '开牌结果确认')
-		  this.smartRefreshVideo(this.bureauNumber, '视频放大')
         }, 5000)
       }
     },
@@ -849,6 +858,81 @@ export default {
     },
 
     /**
+     * 🎯 优化后的视频切换 - 保持原有切换功能
+     */
+    handleZoom() {
+      // 保持原有的切换逻辑
+      this.videoEnlarge = !this.videoEnlarge
+      
+      console.log(`切换到${this.videoEnlarge ? '近景' : '远景'}`)
+      
+      // 移除原有的浏览器兼容刷新逻辑
+      // 现在通过CSS层级切换，无需刷新
+    },
+
+    /**
+     * 🎯 视频加载完成回调
+     */
+    onVideoLoaded(type) {
+      this.videoLoadStatus[type] = true
+      console.log(`${type}景视频加载完成`)
+    },
+
+    /**
+     * 🎯 开牌时的智能缩放效果 - 不影响切换功能
+     */
+    smartVideoZoom(reason = '') {
+      console.log('开牌缩放效果:', reason)
+      
+      // 添加临时缩放效果
+      this.zoomEffectClass = 'opening-zoom'
+      
+      // 5秒后恢复正常，不影响用户的切换状态
+      setTimeout(() => {
+        this.zoomEffectClass = 'normal'
+      }, 5000)
+    },
+
+    /**
+     * 🎯 优化后的刷新 - 仅在必要时使用
+     */
+    refreshIframe() {
+      // 检查当前显示的视频
+      const currentVideo = this.videoEnlarge ? 'near' : 'far'
+      
+      if (!this.videoLoadStatus[currentVideo]) {
+        // 只有在视频未正常加载时才刷新
+        this.startAnimation = true
+        
+        // 重新加载当前显示的视频
+        this.reloadCurrentVideo()
+        
+        setTimeout(() => {
+          this.startAnimation = false
+        }, 1000)
+      } else {
+        console.log('视频正常，无需刷新')
+      }
+    },
+
+    /**
+     * 🎯 重新加载当前视频
+     */
+    reloadCurrentVideo() {
+      const timestamp = Date.now()
+      
+      if (this.videoEnlarge && this.videoNear) {
+        // 重新加载近景
+        this.videoNear = this.videoNear.split('?')[0] + `?t=${timestamp}`
+        this.videoLoadStatus.near = false
+      } else if (!this.videoEnlarge && this.videoFar) {
+        // 重新加载远景
+        this.videoFar = this.videoFar.split('?')[0] + `?t=${timestamp}`
+        this.videoLoadStatus.far = false
+      }
+    },
+
+    /**
      * 重新加载露珠 - 手动点击刷新
      */
     reloadLuzhu() {
@@ -863,65 +947,43 @@ export default {
       }
     },
 
-  /**
-   * 智能刷新露珠 - 防止重复刷新
-   */
-  smartRefreshLuzhu(bureauNumber = null, reason = '') {
-	console.log('露珠刷新中.......................')
-    // 如果正在刷新中，跳过
-    if (this.isRefreshingLuzhu) {
-      console.log('🔄 露珠刷新中，跳过本次请求:', reason)
-      return
-    }
-       
-    this.isRefreshingLuzhu = true
-    
-    try {
-      const lzIframe = document.getElementById('live_details_lz')
-      if (lzIframe) {
-        const timestamp = Date.now()
-        const newSrc = `${this.lzUrl}?tableId=${this.tableId}&user_id=${this.userInformation.id}&t=${timestamp}`
-        lzIframe.src = newSrc
-        
-        // 更新已刷新的局号
-        if (bureauNumber) {
-          this.lastRefreshedBureau = bureauNumber
-        }
-        
-        console.log('🔄 露珠刷新成功:', reason, '局号:', bureauNumber)
-      }
-    } catch (error) {
-      console.error('❌ 露珠刷新失败:', error)
-    } finally {
-      // 1秒后解锁
-      setTimeout(() => {
-        this.isRefreshingLuzhu = false
-      }, 25000)
-    }
-  },
-    smartRefreshVideo(bureauNumber = null, reason = '') {
-    	console.log('视频放大.......................')
+    /**
+     * 智能刷新露珠 - 防止重复刷新
+     */
+    smartRefreshLuzhu(bureauNumber = null, reason = '') {
+      console.log('露珠刷新中.......................')
       // 如果正在刷新中，跳过
-      if (this.isRefreshingVideo) {
-        console.log('🔄 视频放大，跳过本次请求:', reason)
+      if (this.isRefreshingLuzhu) {
+        console.log('🔄 露珠刷新中，跳过本次请求:', reason)
         return
       }
          
-      this.isRefreshingVideo = true
+      this.isRefreshingLuzhu = true
       
       try {
-		this.handleZoom("zoom-1-5")
-          console.log('🔄 视频放大:', reason, '局号:', bureauNumber)
+        const lzIframe = document.getElementById('live_details_lz')
+        if (lzIframe) {
+          const timestamp = Date.now()
+          const newSrc = `${this.lzUrl}?tableId=${this.tableId}&user_id=${this.userInformation.id}&t=${timestamp}`
+          lzIframe.src = newSrc
+          
+          // 更新已刷新的局号
+          if (bureauNumber) {
+            this.lastRefreshedBureau = bureauNumber
+          }
+          
+          console.log('🔄 露珠刷新成功:', reason, '局号:', bureauNumber)
+        }
       } catch (error) {
-        console.error('❌ 视频放大失败:', error)
+        console.error('❌ 露珠刷新失败:', error)
       } finally {
-        // 1秒后解锁
+        // 25秒后解锁
         setTimeout(() => {
-          this.isRefreshingVideo = false
-		  this.handleZoom("normal")
-        }, 5000)
+          this.isRefreshingLuzhu = false
+        }, 25000)
       }
     },
+
     /**
      * 获取整站维护通知
      */
@@ -992,25 +1054,6 @@ export default {
     },
     
     /**
-     * 刷新视频iframe
-     */
-    refreshIframe() {
-      this.startAnimation = true
-      
-      // 执行刷新动作 - 先清空再重新赋值
-      let tempVidelFar = this.videoFar
-      let tempVideoNear = this.videoNear
-      this.videoFar = ''
-      this.videoNear = ''
-      
-      setTimeout(() => {
-        this.startAnimation = false
-        this.videoFar = tempVidelFar
-        this.videoNear = tempVideoNear
-      }, 1000)
-    },
-    
-    /**
      * 停止滚动事件
      * @param {Object} touchEvent - 触摸事件
      */
@@ -1065,25 +1108,6 @@ export default {
       //#endif
       
       return system
-    },
-    
-    /**
-     * 视频放大缩小切换
-     */
-    handleZoom() {
-      this.videoEnlarge = !this.videoEnlarge
-      
-      // Safari 12版本兼容处理
-      //#ifdef H5
-      try {
-        let agent = this.getBrowser()
-        if (agent.type == 'Safari' && agent.versions == 12) {
-          this.refreshIframe()
-        }
-      } catch (error) {
-        console.error('浏览器检测失败:', error)
-      }
-      //#endif
     },
     
     /**
@@ -1414,58 +1438,102 @@ page {
   }
 }
 
-/* 页面背景 - 修复：不露出背景 */
+/* 页面背景 */
 .live-page {
   position: relative;
   width: 100%;
   height: 100vh;
-  background: #000; /* 黑色背景，不露出 */
+  background: #000;
   overflow: hidden;
 }
 
-/* 主要布局样式 - 修复：垂直挤满 */
+/* 主要布局样式 */
 .live-container {
   position: relative;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #000; /* 确保容器背景为黑色 */
+  background: #000;
 }
 
-/* 视频区域样式 - 修复：固定高度 */
+/* 视频区域样式 */
 .live-box {
   position: relative;
   width: 100%;
-  height: 56vw; /* 保持16:9比例 */
-  max-height: 280px; /* 限制最大高度 */
+  height: 56vw;
+  max-height: 280px;
   overflow: hidden;
   background: #000;
-  flex-shrink: 0; /* 不允许收缩 */
+  flex-shrink: 0;
 }
 
-.live-video {
+/* 🎯 优化后的视频容器 - 支持整体缩放效果 */
+.video-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 0.5s ease, filter 0.3s ease;
+}
+
+/* 🎯 视频层 */
+.video-layer {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 2;
+  transition: opacity 0.3s ease, z-index 0.3s ease;
 }
 
+/* 🎯 激活状态的视频层 */
+.layer-active {
+  opacity: 1;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+/* 🎯 隐藏状态的视频层 - 保持加载但不显示 */
+.layer-hidden {
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* iframe样式 */
 .live-details {
   width: 100%;
   height: 100%;
   border: none;
   background: #000;
-  transition: transform 0.3s ease;
 }
+
+/* 🎯 缩放效果类 */
 .normal {
   transform: scale(1);
 }
-.zoom-1-5 {
-	transform: scale(1.5);
-	transform-origin: center center;
+
+.opening-zoom {
+  transform: scale(1.15);
+  filter: brightness(1.05);
 }
+
+/* 🎯 切换动画优化 */
+.video-layer.layer-active {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* 加载动画样式 */
 .live-loading {
   position: absolute;
@@ -1566,7 +1634,7 @@ page {
   }
 }
 
-/* 视频控制按钮 - 修复：统一大小，垂直排列，右上角定位 */
+/* 🎯 视频控制按钮 - 保持原有功能，确保在视频层之上 */
 .video-controls {
   position: absolute;
   top: 15px;
@@ -1574,7 +1642,7 @@ page {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  z-index: 30;
+  z-index: 30; /* 确保在视频层之上 */
 }
 
 .control-btn {
@@ -1606,7 +1674,7 @@ page {
   object-fit: contain;
 }
 
-/* 统计数据样式 - 修复：紧凑排列 */
+/* 统计数据样式 */
 .live-result-detail {
   display: flex;
   justify-content: space-around;
@@ -1637,7 +1705,7 @@ page {
   color: #dc1a1f !important;
 }
 
-/* 投注区域样式 - 修复：填充剩余空间 */
+/* 投注区域样式 */
 .live-bet-box {
   position: relative;
   flex: 1;
@@ -1656,35 +1724,15 @@ page {
   z-index: 2;
 }
 
-/* 露珠区域样式 - 修复：增加高度，确保完整显示 */
+/* 露珠区域样式 */
 .lz_details {
   position: relative;
-  height: 140px; // 从150px增加到180px
-  min-height: 140px; // 设置最小高度
+  height: 140px;
+  min-height: 140px;
   background: rgba(0, 0, 0, 0.9);
   overflow: hidden;
   flex-shrink: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1); /* 添加分隔线 */
-}
-// 响应式适配
-@media screen and (max-width: 750px) {
-  .lz_details {
-    height: 160px; // 小屏幕160px
-  }
-}
-
-@media screen and (max-height: 600px) {
-  .lz_details {
-    height: 140px; // 极小屏幕140px
-  }
-}
-
-// 横屏优化
-@media screen and (orientation: landscape) {
-  .lz_details {
-    height: 25vh; // 横屏时使用视口高度
-    min-height: 150px;
-  }
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .live-details-lz {
@@ -1706,11 +1754,15 @@ page {
   flex-shrink: 0;
 }
 
-/* 响应式设计 - 修复：保持布局紧凑 */
+/* 🎯 移动端优化 */
 @media screen and (max-width: 750px) {
   .live-box {
     height: 60vw;
     max-height: 250px;
+  }
+  
+  .opening-zoom {
+    transform: scale(1.1); /* 小屏幕适度缩放 */
   }
   
   .live-result-detail {
@@ -1746,7 +1798,7 @@ page {
   }
   
   .lz_details {
-    height: 140px; /* 小屏幕下稍微减小 */
+    height: 140px;
   }
 }
 
@@ -1758,7 +1810,7 @@ page {
   }
   
   .lz_details {
-    height: 100px; /* 极小屏幕适配 */
+    height: 100px;
   }
   
   .live-result-detail {

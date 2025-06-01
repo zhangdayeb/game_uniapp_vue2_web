@@ -1,50 +1,4 @@
-/**
-     * 处理提现请求
-     */
-    processWithdrawal() {
-      uni.showLoading({
-        title: '提交中...'
-      })
-      
-      // ============================================
-      // 🎯 申请提现发给后端的数据结构
-      // ============================================
-      const withdrawalData = {
-        amount: this.withdrawAmount,              // 提现金额
-        account_id: this.selectedAccountId,      // 选择的账户ID
-        account_type: this.selectedAccount.account_type, // 账户类型: aba/huiwang/usdt
-        fee_amount: this.feeAmount,              // 手续费金额
-        actual_amount: this.actualAmount,        // 实际到账金额
-        fee_rate: this.feeRate,                  // 手续费率
-        // 可选字段
-        remark: '用户申请提现',                   // 备注信息
-        client_ip: '',                           // 客户端IP（可由后端获取）
-        device_info: '',                         // 设备信息（可选）
-        timestamp: Date.now()                    // 时间戳
-      }
-      
-      console.log('提现申请数据:', withdrawalData)
-      
-      // TODO: 调用真实的提现申请接口
-      // const response = await submitWithdrawalRequest(withdrawalData)
-      
-      // 模拟API请求
-      setTimeout(() => {
-        uni.hideLoading()
-        uni.showToast({
-          title: '提现申请已提交',
-          icon: 'success'
-        })
-        
-        // 重置表单
-        this.withdrawAmount = ''
-        this.selectedAccountId = ''
-        this.selectedAccount = null
-        
-        // 可以跳转到提现记录页面
-        setTimeout(() => {
-          uni.navigateTo({
-            url: '/pages/withdrawal<template>
+<template>
   <!-- 提现申请页面 -->
   <view class="withdrawal-page">
     
@@ -218,15 +172,16 @@
 
 <script>
 // 导入API接口
-import { getUserWithdrawalAccounts, submitWithdrawalRequest, getWithdrawalStats } from '@/api/withdrawalAccount.js'
+import { getUserWithdrawalAccounts, submitWithdrawalRequest } from '@/api/withdrawalAccount.js'
+import api from "@/api/api"
 
 export default {
   name: 'WithdrawalPage',
   
   data() {
     return {
-      // 用户余额
-      userBalance: '10001390.00',
+      // 用户余额 - 从API动态获取
+      userBalance: '0.00',
       
       // 提现金额
       withdrawAmount: '',
@@ -241,8 +196,8 @@ export default {
       // 快速金额选项
       quickAmounts: [100, 500, 1000, 5000],
       
-      // 手续费率
-      feeRate: 0.02, // 2%
+      // 🔥 手续费率设置为0（免手续费）
+      feeRate: 0, // 0% 手续费
     }
   },
   
@@ -271,11 +226,27 @@ export default {
   },
   
   mounted() {
-    // 页面加载时获取用户账户列表和统计信息
+    // 页面加载时获取用户账户列表和余额
     this.loadUserAccounts()
+    this.getUserBalance()
   },
   
   methods: {
+    /**
+     * 获取用户余额
+     */
+    async getUserBalance() {
+      try {
+        const response = await api.getUserInfo()
+        
+        if (response.data.code === 200) {
+          this.userBalance = response.data.data.money_balance || '0.00'
+        }
+      } catch (error) {
+        console.error('获取用户余额失败:', error)
+      }
+    },
+
     /**
      * 加载用户提现账户
      */
@@ -328,7 +299,6 @@ export default {
       })
     },
     
-   
     /**
      * 获取账户图标样式
      */
@@ -428,6 +398,7 @@ export default {
           account_type: this.selectedAccount.account_type,
           fee_amount: this.feeAmount,
           actual_amount: this.actualAmount,
+          fee_rate: this.feeRate,
           remark: '用户申请提现'
         }
         
@@ -441,6 +412,9 @@ export default {
         if (response.data.code === 200) {
           const result = response.data.data
           
+          // 🔥 关键修复：提现成功后立即更新余额
+          await this.getUserBalance()
+          
           // 显示成功信息
           uni.showModal({
             title: '提现申请成功',
@@ -451,7 +425,7 @@ export default {
               if (res.confirm) {
                 // 跳转到提现记录页面
                 uni.navigateTo({
-                  url: '/pages/withdrawal/record'
+                  url: '/pages/user/tixianlist'
                 })
               } else {
                 // 重置表单，继续提现
@@ -877,11 +851,11 @@ export default {
 
 /* ========== 手续费信息 ========== */
 .fee-info {
-  background: rgba(255, 215, 0, 0.1);
+  background: rgba(16, 185, 129, 0.1);
   border-radius: 16rpx;
   padding: 24rpx 30rpx;
   margin-bottom: 40rpx;
-  border: 1rpx solid rgba(255, 215, 0, 0.3);
+  border: 1rpx solid rgba(16, 185, 129, 0.3);
 }
 
 .fee-item {
@@ -900,13 +874,13 @@ export default {
   }
   
   .fee-amount {
-    color: #ff6b6b;
+    color: #10b981;
     font-size: 26rpx;
     font-weight: 600;
   }
   
   .actual-amount {
-    color: #4ecdc4;
+    color: #10b981;
     font-size: 28rpx;
     font-weight: 600;
   }

@@ -35,7 +35,7 @@
       <view class="settings-list">
         
         <!-- 个人账号设定 -->
-        <view class="setting-item" @click="goToAccountSettings">
+<!--        <view class="setting-item" @click="goToAccountSettings">
           <view class="item-left">
             <view class="item-icon account-icon">👤</view>
             <view class="item-info">
@@ -46,10 +46,10 @@
           <view class="item-right">
             <text class="arrow-icon">›</text>
           </view>
-        </view>
+        </view> -->
 
         <!-- 安全设定 -->
-        <view class="setting-item" @click="goToSecuritySettings">
+<!--        <view class="setting-item" @click="goToSecuritySettings">
           <view class="item-left">
             <view class="item-icon security-icon">🔒</view>
             <view class="item-info">
@@ -60,7 +60,7 @@
           <view class="item-right">
             <text class="arrow-icon">›</text>
           </view>
-        </view>
+        </view> -->
 
         <!-- APP信任设置 -->
         <view class="setting-item" @click="showAppTrustGuide">
@@ -101,7 +101,7 @@
         </view>
         
         <view class="guide-content">
-          <view class="guide-step">
+         <view class="guide-step">
             <view class="step-number">1</view>
             <text class="step-text">打开 iOS 设置 → 通用</text>
           </view>
