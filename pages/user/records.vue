@@ -1,21 +1,16 @@
 <template>
-  <!-- 交易记录页面 -->
+  <!-- 交易记录页面 - 真实接口版本 -->
   <view class="records-page">
     
     <!-- 顶部导航栏 -->
     <view class="records-header">
-      <!-- 返回按钮 -->
       <view class="header-back" @click="goBack">
         <text class="back-text">← 返回</text>
       </view>
-      
-      <!-- 标题 -->
       <view class="header-title">
         <text>交易记录</text>
         <text class="title-en">TRANSACTION RECORDS</text>
       </view>
-      
-      <!-- 占位符 -->
       <view class="header-placeholder"></view>
     </view>
 
@@ -50,8 +45,13 @@
       </scroll-view>
     </view>
 
+    <!-- 加载状态 -->
+    <view class="loading-state" v-if="loading">
+      <text class="loading-text">加载中...</text>
+    </view>
+
     <!-- 记录内容区域 -->
-    <view class="records-content">
+    <view class="records-content" v-else>
       
       <!-- 投注记录 -->
       <view class="records-section" v-if="activeType === 'bet'">
@@ -61,30 +61,46 @@
           <text class="section-count">({{ betRecords.length }}条)</text>
         </view>
         
-        <view class="records-list" v-if="betRecords.length > 0">
-          <view 
-            class="record-item bet-item"
-            v-for="record in betRecords"
-            :key="record.id"
-          >
-            <view class="item-header">
-              <text class="game-name">{{ record.gameName }}</text>
-              <text class="bet-time">{{ record.time }}</text>
-            </view>
-            <view class="item-body">
-              <view class="bet-info">
-                <text class="bet-label">投注金额：</text>
-                <text class="bet-amount">${{ record.betAmount }}</text>
+        <scroll-view 
+          class="records-scroll" 
+          scroll-y="true" 
+          @scrolltolower="loadMoreBetRecords"
+          v-if="betRecords.length > 0"
+        >
+          <view class="records-list">
+            <view 
+              class="record-item bet-item"
+              v-for="record in betRecords"
+              :key="record.id"
+              @click="viewBetDetail(record)"
+            >
+              <view class="item-header">
+                <text class="game-name">{{ record.type_name }}</text>
+                <text class="bet-time">{{ record.created_at }}</text>
               </view>
-              <view class="result-info">
-                <text class="result-label">结果：</text>
-                <text class="result-value" :class="getResultClass(record.result)">
-                  {{ getResultText(record.result) }}
-                </text>
+              <view class="item-body">
+                <view class="bet-info">
+                  <text class="bet-label">投注金额：</text>
+                  <text class="bet-amount">${{ record.bet_amt }}</text>
+                </view>
+                <view class="result-info">
+                  <text class="result-label">输赢：</text>
+                  <text class="result-value" :class="getResultClass(record.win_amt)">
+                    {{ getResultText(record.win_amt) }}
+                  </text>
+                </view>
               </view>
             </view>
           </view>
-        </view>
+          
+          <!-- 加载更多提示 -->
+          <view class="load-more" v-if="hasMoreBet">
+            <text class="load-more-text">加载更多...</text>
+          </view>
+          <view class="no-more" v-else-if="betRecords.length > 0">
+            <text class="no-more-text">没有更多数据</text>
+          </view>
+        </scroll-view>
         
         <view class="empty-state" v-else>
           <text class="empty-icon">📝</text>
@@ -100,36 +116,51 @@
           <text class="section-count">({{ winloseRecords.length }}条)</text>
         </view>
         
-        <view class="summary-cards">
+        <!-- 统计汇总 -->
+        <view class="summary-cards" v-if="summaryData">
           <view class="summary-card win-card">
             <text class="card-label">总赢利</text>
-            <text class="card-value">+${{ totalWin }}</text>
+            <text class="card-value">+${{ summaryData.count_win_amt || 0 }}</text>
           </view>
           <view class="summary-card lose-card">
-            <text class="card-label">总亏损</text>
-            <text class="card-value">-${{ totalLose }}</text>
+            <text class="card-label">总下注</text>
+            <text class="card-value">${{ summaryData.count_bet_amt || 0 }}</text>
           </view>
         </view>
         
-        <view class="records-list" v-if="winloseRecords.length > 0">
-          <view 
-            class="record-item winlose-item"
-            v-for="record in winloseRecords"
-            :key="record.id"
-          >
-            <view class="item-header">
-              <text class="game-name">{{ record.gameName }}</text>
-              <text class="record-time">{{ record.time }}</text>
-            </view>
-            <view class="item-body">
-              <view class="amount-info">
-                <text class="amount-value" :class="record.amount > 0 ? 'win-amount' : 'lose-amount'">
-                  {{ record.amount > 0 ? '+' : '' }}${{ record.amount }}
-                </text>
+        <scroll-view 
+          class="records-scroll" 
+          scroll-y="true" 
+          @scrolltolower="loadMoreWinloseRecords"
+          v-if="winloseRecords.length > 0"
+        >
+          <view class="records-list">
+            <view 
+              class="record-item winlose-item"
+              v-for="record in winloseRecords"
+              :key="record.id || record.dates"
+            >
+              <view class="item-header">
+                <text class="game-name">{{ record.dates }}</text>
+                <text class="record-time">{{ record.dates }}</text>
+              </view>
+              <view class="item-body">
+                <view class="amount-info">
+                  <text class="amount-value" :class="record.game_win_count > 0 ? 'win-amount' : 'lose-amount'">
+                    {{ record.game_win_count > 0 ? '+' : '' }}${{ record.game_win_count }}
+                  </text>
+                </view>
               </view>
             </view>
           </view>
-        </view>
+          
+          <view class="load-more" v-if="hasMoreWinlose">
+            <text class="load-more-text">加载更多...</text>
+          </view>
+          <view class="no-more" v-else-if="winloseRecords.length > 0">
+            <text class="no-more-text">没有更多数据</text>
+          </view>
+        </scroll-view>
         
         <view class="empty-state" v-else>
           <text class="empty-icon">🎯</text>
@@ -145,28 +176,42 @@
           <text class="section-count">({{ walletRecords.length }}条)</text>
         </view>
         
-        <view class="records-list" v-if="walletRecords.length > 0">
-          <view 
-            class="record-item wallet-item"
-            v-for="record in walletRecords"
-            :key="record.id"
-          >
-            <view class="item-left">
-              <view class="transaction-icon" :class="getTransactionClass(record.type)">
-                <text>{{ getTransactionIcon(record.type) }}</text>
+        <scroll-view 
+          class="records-scroll" 
+          scroll-y="true" 
+          @scrolltolower="loadMoreWalletRecords"
+          v-if="walletRecords.length > 0"
+        >
+          <view class="records-list">
+            <view 
+              class="record-item wallet-item"
+              v-for="record in walletRecords"
+              :key="record.id"
+            >
+              <view class="item-left">
+                <view class="transaction-icon" :class="getTransactionClass(record.status)">
+                  <text>{{ getTransactionIcon(record.status) }}</text>
+                </view>
+                <view class="transaction-info">
+                  <text class="transaction-title">{{ getTransactionTitle(record.status) }}</text>
+                  <text class="transaction-time">{{ record.create_time }}</text>
+                </view>
               </view>
-              <view class="transaction-info">
-                <text class="transaction-title">{{ getTransactionTitle(record.type) }}</text>
-                <text class="transaction-time">{{ record.time }}</text>
+              <view class="item-right">
+                <text class="transaction-amount" :class="record.money > 0 ? 'income' : 'expense'">
+                  {{ record.money > 0 ? '+' : '' }}${{ Math.abs(record.money) }}
+                </text>
               </view>
-            </view>
-            <view class="item-right">
-              <text class="transaction-amount" :class="record.amount > 0 ? 'income' : 'expense'">
-                {{ record.amount > 0 ? '+' : '' }}${{ Math.abs(record.amount) }}
-              </text>
             </view>
           </view>
-        </view>
+          
+          <view class="load-more" v-if="hasMoreWallet">
+            <text class="load-more-text">加载更多...</text>
+          </view>
+          <view class="no-more" v-else-if="walletRecords.length > 0">
+            <text class="no-more-text">没有更多数据</text>
+          </view>
+        </scroll-view>
         
         <view class="empty-state" v-else>
           <text class="empty-icon">💳</text>
@@ -178,6 +223,8 @@
 </template>
 
 <script>
+import api from "@/api/log"
+
 export default {
   name: 'UserRecordsPage',
   
@@ -185,6 +232,7 @@ export default {
     return {
       activeType: 'bet',
       activeDate: 'today',
+      loading: false,
       
       // 记录类型
       recordTypes: [
@@ -202,95 +250,26 @@ export default {
         { value: 'earlier', label: '更早' }
       ],
       
-      // 模拟数据
-      betRecords: [
-        {
-          id: '1',
-          gameName: '百家乐',
-          betAmount: '500.00',
-          result: 'win',
-          time: '2024-01-15 14:30:25'
-        },
-        {
-          id: '2',
-          gameName: '龙虎斗',
-          betAmount: '200.00',
-          result: 'lose',
-          time: '2024-01-15 13:45:12'
-        },
-        {
-          id: '3',
-          gameName: '骰宝',
-          betAmount: '100.00',
-          result: 'win',
-          time: '2024-01-15 12:20:48'
-        }
-      ],
+      // 真实数据
+      betRecords: [],
+      winloseRecords: [],
+      walletRecords: [],
+      summaryData: null,
       
-      winloseRecords: [
-        {
-          id: '1',
-          gameName: '百家乐',
-          amount: 450.00,
-          time: '2024-01-15 14:30:25'
-        },
-        {
-          id: '2',
-          gameName: '龙虎斗',
-          amount: -200.00,
-          time: '2024-01-15 13:45:12'
-        },
-        {
-          id: '3',
-          gameName: '骰宝',
-          amount: 90.00,
-          time: '2024-01-15 12:20:48'
-        }
-      ],
+      // 分页参数
+      betPage: { page: 1, limit: 20 },
+      winlosePage: { page: 1, limit: 20 },
+      walletPage: { page: 1, limit: 20 },
       
-      walletRecords: [
-        {
-          id: '1',
-          type: 'deposit',
-          amount: 1000.00,
-          time: '2024-01-15 10:30:00'
-        },
-        {
-          id: '2',
-          type: 'bet',
-          amount: -500.00,
-          time: '2024-01-15 14:30:25'
-        },
-        {
-          id: '3',
-          type: 'win',
-          amount: 450.00,
-          time: '2024-01-15 14:31:00'
-        },
-        {
-          id: '4',
-          type: 'withdraw',
-          amount: -800.00,
-          time: '2024-01-14 16:45:30'
-        }
-      ]
+      // 分页状态
+      hasMoreBet: true,
+      hasMoreWinlose: true,
+      hasMoreWallet: true
     }
   },
   
-  computed: {
-    totalWin() {
-      return this.winloseRecords
-        .filter(record => record.amount > 0)
-        .reduce((sum, record) => sum + record.amount, 0)
-        .toFixed(2)
-    },
-    
-    totalLose() {
-      return Math.abs(this.winloseRecords
-        .filter(record => record.amount < 0)
-        .reduce((sum, record) => sum + record.amount, 0))
-        .toFixed(2)
-    }
+  onLoad() {
+    this.loadData()
   },
   
   methods: {
@@ -306,6 +285,7 @@ export default {
      */
     switchType(type) {
       this.activeType = type
+      this.loadData()
     },
     
     /**
@@ -313,66 +293,308 @@ export default {
      */
     switchDate(date) {
       this.activeDate = date
-      // 这里可以根据日期重新获取数据
+      this.resetPagination()
+      this.loadData()
+    },
+    
+    /**
+     * 重置分页
+     */
+    resetPagination() {
+      this.betPage.page = 1
+      this.winlosePage.page = 1
+      this.walletPage.page = 1
+      this.betRecords = []
+      this.winloseRecords = []
+      this.walletRecords = []
+      this.hasMoreBet = true
+      this.hasMoreWinlose = true
+      this.hasMoreWallet = true
+    },
+    
+    /**
+     * 获取日期类型
+     */
+    getDateType() {
+      const typeMap = {
+        'today': 1,
+        'yesterday': 2,
+        'week': 3,
+        'month': 4,
+        'earlier': 0
+      }
+      return typeMap[this.activeDate] || 1
+    },
+    
+    /**
+     * 加载数据
+     */
+    loadData() {
+      if (this.activeType === 'bet') {
+        this.loadBetRecords()
+      } else if (this.activeType === 'winlose') {
+        this.loadWinloseRecords()
+      } else if (this.activeType === 'wallet') {
+        this.loadWalletRecords()
+      }
+    },
+    
+    /**
+     * 加载投注记录
+     */
+    async loadBetRecords() {
+      if (this.loading || !this.hasMoreBet) return
+      
+      this.loading = true
+      try {
+        const params = {
+          type: this.getDateType(),
+          page: this.betPage.page,
+          limit: this.betPage.limit
+        }
+        
+        const response = await api.bet_list_log(params)
+        
+        if (response.data.code === 200) {
+          const newRecords = response.data.data.data || []
+          
+          if (this.betPage.page === 1) {
+            this.betRecords = newRecords
+          } else {
+            this.betRecords.push(...newRecords)
+          }
+          
+          // 处理详情数组
+          this.betRecords.forEach(record => {
+            if (record.detail) {
+              record.detailArr = record.detail.split('：')
+            }
+          })
+          
+          this.hasMoreBet = newRecords.length >= this.betPage.limit
+        }
+      } catch (error) {
+        console.error('加载投注记录失败:', error)
+        uni.showToast({
+          title: '加载失败',
+          icon: 'none'
+        })
+      } finally {
+        this.loading = false
+      }
+    },
+    
+    /**
+     * 加载输赢记录
+     */
+    async loadWinloseRecords() {
+      if (this.loading || !this.hasMoreWinlose) return
+      
+      this.loading = true
+      try {
+        const params = {
+          type: this.getDateType(),
+          page: this.winlosePage.page,
+          limit: this.winlosePage.limit
+        }
+        
+        const response = await api.betlog(params)
+        
+        if (response.data.code === 200) {
+          const data = response.data.data
+          
+          // 统计数据
+          if (this.winlosePage.page === 1) {
+            this.summaryData = data.count
+          }
+          
+          const newRecords = data.data?.data || []
+          
+          if (this.winlosePage.page === 1) {
+            this.winloseRecords = newRecords
+          } else {
+            this.winloseRecords.push(...newRecords)
+          }
+          
+          this.hasMoreWinlose = newRecords.length >= this.winlosePage.limit
+        }
+      } catch (error) {
+        console.error('加载输赢记录失败:', error)
+        uni.showToast({
+          title: '加载失败',
+          icon: 'none'
+        })
+      } finally {
+        this.loading = false
+      }
+    },
+    
+    /**
+     * 加载钱包流水
+     */
+    async loadWalletRecords() {
+      if (this.loading || !this.hasMoreWallet) return
+      
+      this.loading = true
+      try {
+        const params = {
+          type: this.getDateType(),
+          page: this.walletPage.page,
+          limit: this.walletPage.limit
+        }
+        
+        const response = await api.money_out_log(params)
+        
+        if (response.data.code === 200) {
+          const newRecords = response.data.data.data || []
+          
+          if (this.walletPage.page === 1) {
+            this.walletRecords = newRecords
+          } else {
+            this.walletRecords.push(...newRecords)
+          }
+          
+          this.hasMoreWallet = newRecords.length >= this.walletPage.limit
+        }
+      } catch (error) {
+        console.error('加载钱包流水失败:', error)
+        uni.showToast({
+          title: '加载失败',
+          icon: 'none'
+        })
+      } finally {
+        this.loading = false
+      }
+    },
+    
+    /**
+     * 加载更多投注记录
+     */
+    loadMoreBetRecords() {
+      if (this.hasMoreBet && !this.loading) {
+        this.betPage.page++
+        this.loadBetRecords()
+      }
+    },
+    
+    /**
+     * 加载更多输赢记录
+     */
+    loadMoreWinloseRecords() {
+      if (this.hasMoreWinlose && !this.loading) {
+        this.winlosePage.page++
+        this.loadWinloseRecords()
+      }
+    },
+    
+    /**
+     * 加载更多钱包流水
+     */
+    loadMoreWalletRecords() {
+      if (this.hasMoreWallet && !this.loading) {
+        this.walletPage.page++
+        this.loadWalletRecords()
+      }
+    },
+    
+    /**
+     * 查看投注详情
+     */
+    async viewBetDetail(record) {
+      try {
+        const response = await api.getResultGamePoker({ id: record.lu_zhu_id })
+        
+        if (response.data.code === 200) {
+          // 显示开牌结果
+          const resultInfo = response.data.data
+          // 这里可以显示详细的开牌结果
+          console.log('开牌结果:', resultInfo)
+        }
+      } catch (error) {
+        console.error('获取开牌结果失败:', error)
+      }
     },
     
     /**
      * 获取结果样式类
      */
-    getResultClass(result) {
-      return result === 'win' ? 'win-result' : 'lose-result'
+    getResultClass(amount) {
+      return amount > 0 ? 'win-result' : 'lose-result'
     },
     
     /**
      * 获取结果文本
      */
-    getResultText(result) {
-      return result === 'win' ? '赢' : '输'
+    getResultText(amount) {
+      return amount > 0 ? `+$${amount}` : amount < 0 ? `-$${Math.abs(amount)}` : '$0'
     },
     
     /**
      * 获取交易类型样式
      */
-    getTransactionClass(type) {
+    getTransactionClass(status) {
       const classes = {
-        deposit: 'deposit-icon',
-        withdraw: 'withdraw-icon',
-        bet: 'bet-icon',
-        win: 'win-icon'
+        '充值': 'deposit-icon',
+        '提现': 'withdraw-icon',
+        '投注': 'bet-icon',
+        '中奖': 'win-icon'
       }
-      return classes[type] || ''
+      return classes[status] || 'default-icon'
     },
     
     /**
      * 获取交易图标
      */
-    getTransactionIcon(type) {
+    getTransactionIcon(status) {
       const icons = {
-        deposit: '💰',
-        withdraw: '💸',
-        bet: '🎲',
-        win: '🎉'
+        '充值': '💰',
+        '提现': '💸',
+        '投注': '🎲',
+        '中奖': '🎉'
       }
-      return icons[type] || '💳'
+      return icons[status] || '💳'
     },
     
     /**
      * 获取交易标题
      */
-    getTransactionTitle(type) {
-      const titles = {
-        deposit: '充值',
-        withdraw: '提现',
-        bet: '投注',
-        win: '中奖'
-      }
-      return titles[type] || '未知'
+    getTransactionTitle(status) {
+      return status || '未知交易'
     }
   }
 }
 </script>
 
+
 <style lang="scss" scoped>
+	/* 继承原有样式，添加新增样式 */
+	
+	.loading-state {
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	  padding: 80rpx;
+	  
+	  .loading-text {
+	    color: rgba(255, 255, 255, 0.6);
+	    font-size: 24rpx;
+	  }
+	}
+	
+	.records-scroll {
+	  max-height: 600rpx;
+	}
+	
+	.load-more, .no-more {
+	  display: flex;
+	  justify-content: center;
+	  padding: 30rpx;
+	  
+	  .load-more-text, .no-more-text {
+	    color: rgba(255, 255, 255, 0.5);
+	    font-size: 22rpx;
+	  }
+	}
 /* ========== 页面主体样式 ========== */
 .records-page {
   min-height: 100vh;

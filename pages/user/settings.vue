@@ -35,7 +35,7 @@
       <view class="settings-list">
         
         <!-- 个人账号设定 -->
-<!--        <view class="setting-item" @click="goToAccountSettings">
+<!--       <view class="setting-item" @click="goToAccountSettings">
           <view class="item-left">
             <view class="item-icon account-icon">👤</view>
             <view class="item-info">
@@ -49,7 +49,7 @@
         </view> -->
 
         <!-- 安全设定 -->
-<!--        <view class="setting-item" @click="goToSecuritySettings">
+<!--       <view class="setting-item" @click="goToSecuritySettings">
           <view class="item-left">
             <view class="item-icon security-icon">🔒</view>
             <view class="item-info">
