@@ -34,7 +34,7 @@
 				this.checkTimer = setInterval(() => {
 					let routes = getCurrentPages()
 					let curRoute = routes[routes.length - 1].route
-					if(curRoute == 'pages/login/login' || curRoute == 'pages/maintain/maintain') {
+					if(curRoute == 'pages/login/login' || curRoute == 'pages/maintain/maintain' || curRoute == 'pages/login/register') {
 						return
 					}else{
 						let userInformation = uni.getStorageSync('login_user_info')

@@ -28,7 +28,14 @@ Vue.use(OtherPlace);
 
 Vue.component('Maintain',Maintain)
 
-
+// 在 main.js 或 app.js 中添加错误处理
+window.addEventListener('error', (e) => {
+  if (e.message && e.message.includes('message port closed')) {
+    // 忽略浏览器扩展引起的错误
+    e.preventDefault();
+    return false;
+  }
+});
 
 // 引入uView提供的对vuex的简写法文件
 let vuexStore = require('@/store/$u.mixin.js');

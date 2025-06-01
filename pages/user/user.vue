@@ -25,6 +25,10 @@
 						<text class="accouct">{{userLocales.balance}}:</text>
 						<text class="amount"> {{user_money}}</text>
 					</view>
+					<view class="user-rebate-box">
+					    <text class="accouct">洗码费:</text>
+					    <text class="rebate-amount"> {{user_rebate_balance}}</text>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -113,6 +117,8 @@
 				errorImg: '/static/img/user/header.png',
 				user_name: '',
 				user_money: 0,
+				user_rebate_balance: 0,    // 洗码费余额
+				user_rebate_total: 0,      // 累计洗码费
 				//用户登录信息
 				loginUserInfo: uni.getStorageSync('login_user_info'),
 				//用户双语
@@ -341,6 +347,10 @@
 					if (res.data.code == 200) {
 						this.user_name = res.data.data.user_name
 						this.user_money = res.data.data.money_balance
+						// 新增洗码费数据
+						this.user_rebate_balance = res.data.data.rebate_balance || 0
+						this.user_rebate_total = res.data.data.rebate_total || 0
+									
 						let length = res.data.data.head_img ? res.data.data.head_img.length : 0
 						if(length > 0) {
 							this.image = res.data.data.head_img
@@ -451,6 +461,31 @@
 						.accouct{
 							margin-left: 12rpx;
 						}	
+					}
+					
+					.user-rebate-box {  // 新增洗码费样式
+						width: 340rpx;
+						height: 40rpx;
+						border-radius: 20rpx;
+						margin-top: 8rpx;
+						padding-left: 8rpx;
+						line-height: 40rpx;
+						color: #FFFFFF;
+						font-size: 16px;
+						font-weight: bold;
+					}
+					
+					.user-rebate-box {
+						background: linear-gradient(135deg, rgba(235, 208, 147, 0.2) 0%, rgba(235, 208, 147, 0.1) 100%);
+						border: 1rpx solid rgba(235, 208, 147, 0.3);
+						
+						.rebate-amount {
+							margin-left: 12rpx;
+						}
+						
+						.accouct {
+							margin-left: 12rpx;
+						}
 					}
 				}
 			}
