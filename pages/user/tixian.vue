@@ -329,23 +329,7 @@ export default {
       })
     },
     
-    /**
-     * 加载提现统计信息
-     */
-    async loadWithdrawalStats() {
-      try {
-        const response = await getWithdrawalStats({})
-        
-        if (response.data.code === 200) {
-          const stats = response.data.data
-          // 可以在这里更新页面显示的统计信息
-          console.log('提现统计:', stats)
-        }
-      } catch (error) {
-        console.error('获取提现统计失败:', error)
-      }
-    },
-    
+   
     /**
      * 获取账户图标样式
      */
