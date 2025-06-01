@@ -30,10 +30,11 @@
         </view>
         <view class="summary-icon">👤</view>
       </view>
-
+        <!-- 修改密码功能 -->
+            <password-change />
       <!-- 设置选项列表 -->
       <view class="settings-list">
-        
+
         <!-- 个人账号设定 -->
 <!--       <view class="setting-item" @click="goToAccountSettings">
           <view class="item-left">
@@ -139,10 +140,13 @@
 
 <script>
 import user from "@/api/api"
+import PasswordChange from './password-change.vue'
 
 export default {
   name: 'UserSettingsPage',
-  
+  components: {
+    PasswordChange
+  },
   data() {
     return {
       user_name: '',
