@@ -198,7 +198,7 @@
           id="betIframe" 
           frameborder="0" 
           scrolling="no" 
-          :src="`${configService.betUrl}/bjlLhV2?table_id=${tableId}&game_type=${game_type_id}&user_id=${userInformation.id}&token=${userToken}`"
+          :src="`${configService.betUrl}/bjlLh?table_id=${tableId}&game_type=${game_type_id}&user_id=${userInformation.id}&token=${userToken}`"
         ></iframe>
       </view>
       
@@ -767,7 +767,7 @@ export default {
           this.getGameBetCount()
           this.handleRefresh()
           // 🎯 关键：使用智能缩放替代原来的视频刷新
-          this.smartVideoZoom('开牌结果确认')
+          // this.smartVideoZoom('开牌结果确认')
           this.smartRefreshLuzhu(this.bureauNumber, '开牌结果确认')
         }, 5000)
       }
@@ -887,10 +887,10 @@ export default {
       // 添加临时缩放效果
       this.zoomEffectClass = 'opening-zoom'
       
-      // 5秒后恢复正常，不影响用户的切换状态
+      // 8秒后恢复正常，不影响用户的切换状态  视频缩放
       setTimeout(() => {
         this.zoomEffectClass = 'normal'
-      }, 5000)
+      }, 12000)
     },
 
     /**
@@ -1151,6 +1151,11 @@ export default {
         this.showMsgOpen = true
         this.activityDescribeText = this.liveLocales.begunBet
       }
+	  
+	  // 倒计时28秒时执行缩放效果
+	  if (tableRunInfo.end_time == 5) {
+	    this.smartVideoZoom('倒计时5秒缩放')
+	  }
 
       // 3.5秒后关闭消息提示
       setTimeout(() => {
@@ -1512,9 +1517,9 @@ page {
 .normal {
   transform: scale(1);
 }
-
+/* 视频缩放 */
 .opening-zoom {
-  transform: scale(1.15);
+  transform: scale(3);
   filter: brightness(1.05);
 }
 
@@ -1727,8 +1732,8 @@ page {
 /* 露珠区域样式 */
 .lz_details {
   position: relative;
-  height: 140px;
-  min-height: 140px;
+  height: 155px;
+  min-height: 155px;
   background: rgba(0, 0, 0, 0.9);
   overflow: hidden;
   flex-shrink: 0;
@@ -1798,7 +1803,7 @@ page {
   }
   
   .lz_details {
-    height: 140px;
+    height: 150px;
   }
 }
 

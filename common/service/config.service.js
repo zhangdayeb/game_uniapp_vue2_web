@@ -1,7 +1,8 @@
 let BASE_URL = ''
 let WEBSITE_URL 	= 'www.wuming888.com'
 //下注区域地址
-let BET_URL         = 'https://bet.wuming888.com'
+let BET_URL         = 'https://bet2.wuming888.com'
+
 
 // api 地址源头
 let USER_URL 		= 'https://userapi.wuming888.com'
