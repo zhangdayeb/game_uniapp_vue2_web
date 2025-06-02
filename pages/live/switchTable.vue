@@ -1,7 +1,8 @@
 <template>
 	<!-- :class="{'switch-run-draw': show}" -->
 	<view class="switch-panel" id="switch-panel" :class="{'switch-run-draw': show, 'switch-close-draw':closePanelState=='close'}" @click="closeModel($event)">
-		<!-- <u-popup v-model="show" mode="right" @close="closeModel" :mask="false" width="78%"
+		<!-- 
+		<u-popup v-model="show" mode="right" @close="closeModel" :mask="false" width="78%"
 			:custom-style="{top: '50rpx'}">
 			<scroll-view scroll-y="auto" style="padding-top: 10rpx;">
 				<view class="tableItem" v-for="(item, index) in get_table" :key="index">
@@ -15,7 +16,8 @@
 					</view>
 				</view>
 			</scroll-view>
-		</u-popup> -->
+		</u-popup>
+		 -->
 		<view class="switch-popup"  >
 			<!-- style="height: 100%; position: absolute;right: 0;width: 50%;" -->
 			<scroll-view scroll-y="auto" style="padding-top: 10rpx;">

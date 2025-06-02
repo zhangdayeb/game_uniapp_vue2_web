@@ -1,7 +1,7 @@
 <template>
   <view class="live-page" id="live-page">
     <!-- 连接状态指示器 -->
-    <view class="socket-status" v-if="!socketStatus.isConnected">
+    <view class="socket-status" v-if="!socketStatus.isConnected && show_websocket_tips">
       <view class="status-indicator">
         <u-icon name="wifi-off" color="#ff4444" size="20" />
         <text>连接中...</text>
@@ -203,7 +203,7 @@
       </view>
       
       <!-- 露珠显示区域 -->
-      <view class="lz_details">
+      <view class="lz_details" :style="{ height: luzhuHeight+ 'px' }">
         <!-- 露珠加载背景 -->
         <view 
           class="live-loading" 
@@ -345,6 +345,7 @@ export default {
       
       // Socket相关
       configService: configService, // 初始化服务配置项目
+	  show_websocket_tips:false, // 是否展示 websocket 链接状态 默认关闭
       
       // Socket相关状态
       gameSocket: null,
@@ -364,6 +365,11 @@ export default {
       luzhuSrc: '',
       luzhuKey: 1,
       luzhuTimestamp: Date.now(),
+	  
+	  // 露珠宽高
+	  aspectRatio:2.7,
+	  luzhuHeight:0,
+	  screenWidth:0,
     }
   },
   
@@ -414,6 +420,15 @@ export default {
     this.isManualDisconnect = false
     // 连接Socket
     this.connectGameSocket()
+	// 动态露珠高度 让问路可以显示全
+	// 使用 uni.getSystemInfo() 获取屏幕信息
+	uni.getSystemInfo({
+	  success: (res) => {
+	    this.screenWidth = res.windowWidth // 屏幕宽度（px）
+		this.luzhuHeight =  Math.floor(this.screenWidth / this.aspectRatio)
+	  }
+	})
+	
   },
   
   /**
@@ -503,15 +518,17 @@ export default {
      * 备用提示方法
      */
     showToast(message) {
-      if (this.$tip && this.$tip.toast) {
-        this.$tip.toast(message)
-      } else {
-        uni.showToast({
-          title: message,
-          icon: 'none',
-          duration: 2000
-        })
-      }
+	  if(this.show_websocket_tips){
+		  if (this.$tip && this.$tip.toast) {
+		    this.$tip.toast(message)
+		  } else {
+		    uni.showToast({
+		      title: message,
+		      icon: 'none',
+		      duration: 2000
+		    })
+		  }
+	  }      
     },
 
     showAlert(message) {
@@ -600,7 +617,7 @@ export default {
       // 监听达到最大重连次数
       this.gameSocket.on('maxReconnectAttemptsReached', () => {
         console.log('Max reconnect attempts reached')
-        this.showAlert('网络连接失败，请检查网络后重新进入')
+		this.showToast('网络连接失败，请检查网络后重新进入')
       })
     },
 
@@ -767,7 +784,6 @@ export default {
           this.getGameBetCount()
           this.handleRefresh()
           // 🎯 关键：使用智能缩放替代原来的视频刷新
-          // this.smartVideoZoom('开牌结果确认')
           this.smartRefreshLuzhu(this.bureauNumber, '开牌结果确认')
         }, 5000)
       }
@@ -890,7 +906,7 @@ export default {
       // 8秒后恢复正常，不影响用户的切换状态  视频缩放
       setTimeout(() => {
         this.zoomEffectClass = 'normal'
-      }, 12000)
+      }, 15000)
     },
 
     /**
@@ -1152,8 +1168,8 @@ export default {
         this.activityDescribeText = this.liveLocales.begunBet
       }
 	  
-	  // 倒计时28秒时执行缩放效果
-	  if (tableRunInfo.end_time == 5) {
+	  // 倒计时28秒时执行缩放效果  视频缩放
+	  if (tableRunInfo.end_time == 2) {
 	    this.smartVideoZoom('倒计时5秒缩放')
 	  }
 
@@ -1454,18 +1470,28 @@ page {
 
 /* 主要布局样式 */
 .live-container {
-  position: relative;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: #000;
+  // position: relative;
+  // height: 100vh;
+  // display: flex;
+  // flex-direction: column;
+  // background: #000;
+  
+    height: 100vh;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 
+        55px          /* 区域1固定高度 */
+        250px         /* 区域2固定高度 */
+        28px          /* 区域3固定高度 */
+        1fr           /* 区域4自由压缩 */
+        calc(100vw * 0.36); /* 区域5保持宽高比(假设比例为5:2) */
 }
 
 /* 视频区域样式 */
 .live-box {
   position: relative;
   width: 100%;
-  height: 56vw;
+  height: 250px;
   max-height: 280px;
   overflow: hidden;
   background: #000;
@@ -1519,7 +1545,7 @@ page {
 }
 /* 视频缩放 */
 .opening-zoom {
-  transform: scale(3);
+  transform: scale(100);
   filter: brightness(1.05);
 }
 
@@ -1762,7 +1788,7 @@ page {
 /* 🎯 移动端优化 */
 @media screen and (max-width: 750px) {
   .live-box {
-    height: 60vw;
+    height: 250px;
     max-height: 250px;
   }
   
@@ -1804,59 +1830,6 @@ page {
   
   .lz_details {
     height: 150px;
-  }
-}
-
-/* 小屏幕适配 */
-@media screen and (max-height: 600px) {
-  .live-box {
-    height: 45vw;
-    max-height: 200px;
-  }
-  
-  .lz_details {
-    height: 100px;
-  }
-  
-  .live-result-detail {
-    padding: 4px 6px;
-    min-height: 24px;
-    
-    text {
-      font-size: 9px;
-    }
-  }
-}
-
-/* 横屏适配 */
-@media screen and (orientation: landscape) and (max-height: 500px) {
-  .live-container {
-    flex-direction: row;
-  }
-  
-  .live-box {
-    width: 60%;
-    height: 80vh;
-    max-height: none;
-  }
-  
-  .live-bet-box {
-    width: 35%;
-    height: 60vh;
-  }
-  
-  .lz_details {
-    width: 35%;
-    height: 20vh;
-  }
-  
-  .live-result-detail {
-    position: absolute;
-    bottom: 0;
-    left: 60%;
-    width: 40%;
-    flex-direction: column;
-    padding: 5px;
   }
 }
 
