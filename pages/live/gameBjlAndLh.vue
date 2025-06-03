@@ -1619,9 +1619,35 @@ page {
 }
 /* 视频缩放 */
 .opening-zoom {
-  transform: scale(100);
-  filter: brightness(1.05);
+  /* 超大缩放倍数 */
+  transform: scale(1.5) !important;
+  transform-origin: center center !important;
+  
+  /* 突破容器限制 */
+  position: relative !important;
+  z-index: 9999 !important;
+  
+  /* 确保显示区域合理 */
+  overflow: visible !important;
+  
+  /* 视觉增强 */
+  filter: brightness(1.3) contrast(1.2) saturate(1.4) !important;
+  
+  /* 平滑动画 */
+  transition: all 1.2s cubic-bezier(0.23, 1, 0.320, 1) !important;
+  
+  /* 强烈的视觉效果 */
+  box-shadow: 
+    0 0 50px rgba(255, 255, 255, 0.6),
+    0 0 100px rgba(255, 255, 255, 0.4),
+    0 0 150px rgba(255, 255, 255, 0.2) !important;
+  
+  /* 边框效果 */
+  border: 4px solid rgba(255, 255, 255, 0.8) !important;
+  border-radius: 12px !important;
 }
+
+
 
 /* 🎯 切换动画优化 */
 .video-layer.layer-active {
