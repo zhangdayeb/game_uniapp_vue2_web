@@ -1,4 +1,4 @@
-// pages/live/gameBjlAndLh.js - 最终完整版本
+// pages/live/gameBjlAndLh.js - 清理版本（移除CSS变量依赖）
 import { GameSocketManager } from '@/utils/socket-manager.js'
 import configService from '@/common/service/config.service.js'
 import apiService from '@/api/game.js'

@@ -1,108 +1,121 @@
 /* ========================================
-   gameBjlAndLh.css - 最终完整版本
-   已修复iPhone Safari视口问题
+   gameBjlAndLh.css - 完整修正版本
+   针对近5年手机机型优化，放弃老设备兼容
+   使用flexbox + 动态高度，确保投注区域最小270px
    ======================================== */
 
-/* ========== iPhone Safari 视口修复 ========== */
+/* ========== 基础重置和变量定义 ========== */
 :root {
-  --real-vh: 1vh; /* 默认值，会被JavaScript动态更新 */
+  --screen-height: 100vh; /* 由JavaScript动态设置真实屏幕高度 */
 }
 
-/* 基础页面样式 */
-page {
-  height: 100vh;
+/* 基础重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
   overflow: hidden;
-  
-  /* iPhone Safari 修复 */
-  @supports (-webkit-touch-callout: none) {
-    height: calc(var(--real-vh, 1vh) * 100);
-    min-height: calc(var(--real-vh, 1vh) * 100);
-  }
-}
-
-/* Socket状态指示器样式 */
-.socket-status {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  z-index: 9999;
-  background: rgba(0, 0, 0, 0.8);
-  padding: 8px 12px;
-  border-radius: 4px;
-  color: white;
-  font-size: 12px;
-  
-  .status-indicator {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    
-    text {
-      margin-left: 4px;
-    }
-  }
-}
-
-/* 刷新动画 */
-.video-animation {
-  animation: refreshAnimation 1s linear infinite;
-}
-
-@keyframes refreshAnimation {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* 页面背景 */
-.live-page {
-  position: relative;
+  height: 100%;
   width: 100%;
-  height: 100vh;
+  background: #000;
+}
+
+page {
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+/* ========== 主要布局容器 ========== */
+.live-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--screen-height);
   background: #000;
   overflow: hidden;
-  
-  /* iPhone Safari 修复 */
-  @supports (-webkit-touch-callout: none) {
-    height: calc(var(--real-vh, 1vh) * 100);
-    min-height: calc(var(--real-vh, 1vh) * 100);
-  }
+  z-index: 1;
 }
 
-/* 主要布局样式 */
 .live-container {
-  height: 100vh;
+  width: 100%;
+  height: var(--screen-height);
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  display: grid;
-  grid-template-rows: 
-      55px          /* 区域1固定高度 */
-      250px         /* 区域2固定高度 */
-      28px          /* 区域3固定高度 */
-      1fr           /* 区域4自由压缩 */
-      calc(100vw * 0.36); /* 区域5保持宽高比 */
-  
-  /* iPhone Safari 修复 */
-  @supports (-webkit-touch-callout: none) {
-    height: calc(var(--real-vh, 1vh) * 100);
-    min-height: calc(var(--real-vh, 1vh) * 100);
-  }
+  background: #000;
 }
 
-/* 视频区域样式 */
+/* ========== 各区域布局 ========== */
+
+/* 头部区域 - 固定55px */
+.live-container > *:nth-child(1) {
+  height: 55px;
+  flex-shrink: 0;
+  background: #1d1c21;
+}
+
+/* 视频区域 - 固定250px */
 .live-box {
   position: relative;
   width: 100%;
   height: 250px;
-  max-height: 280px;
+  min-height: 250px;
+  flex-shrink: 0;
   overflow: hidden;
   background: #000;
-  flex-shrink: 0;
 }
 
-/* 优化后的视频容器 - 支持整体缩放效果 */
+/* 统计数据区域 - 固定28px */
+.live-result-detail {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.8);
+  font-size: 13px;
+  font-weight: 600;
+  height: 28px;
+  min-height: 28px;
+  flex-shrink: 0;
+  
+  text {
+    color: white;
+    margin: 0 3px;
+    font-size: 12px;
+  }
+}
+
+/* 投注区域 - 最少270px，剩余空间自适应 */
+.live-bet-box {
+  position: relative;
+  flex: 1;
+  min-height: 270px;
+  background: rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+}
+
+/* 露珠区域 - 按屏幕宽度36%计算高度 */
+.lz_details {
+  position: relative;
+  height: calc(100vw * 0.36);
+  min-height: calc(100vw * 0.36);
+  max-height: calc(100vw * 0.36);
+  background: rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ========== 视频相关样式 ========== */
+
+/* 视频容器 - 支持缩放效果 */
 .video-container {
   position: relative;
   width: 100%;
@@ -128,7 +141,7 @@ page {
   pointer-events: auto;
 }
 
-/* 隐藏状态的视频层 - 保持加载但不显示 */
+/* 隐藏状态的视频层 */
 .layer-hidden {
   opacity: 0;
   z-index: 1;
@@ -143,58 +156,28 @@ page {
   background: #000;
 }
 
-/* 缩放效果类 */
+/* 缩放效果 */
 .normal {
   transform: scale(1);
 }
 
-/* 视频缩放 */
 .opening-zoom {
-  /* 超大缩放倍数 */
-  transform: scale(1.5) !important;
+  transform: scale(1.3) !important;
   transform-origin: center center !important;
-  
-  /* 突破容器限制 */
   position: relative !important;
   z-index: 9999 !important;
-  
-  /* 确保显示区域合理 */
-  overflow: visible !important;
-  
-  /* 视觉增强 */
   filter: brightness(1.1) contrast(1.05) saturate(1.2) !important;
-  
-  /* 平滑动画 */
   transition: all 1.2s cubic-bezier(0.23, 1, 0.320, 1) !important;
-  
-  /* 强烈的视觉效果 */
   box-shadow: 
-    0 0 50px rgba(255, 255, 255, 0.6),
-    0 0 100px rgba(255, 255, 255, 0.4),
-    0 0 150px rgba(255, 255, 255, 0.2) !important;
-  
-  /* 边框效果 */
-  border: 4px solid rgba(255, 255, 255, 0.8) !important;
-  border-radius: 12px !important;
+    0 0 30px rgba(255, 255, 255, 0.6),
+    0 0 60px rgba(255, 255, 255, 0.4) !important;
+  border: 3px solid rgba(255, 255, 255, 0.8) !important;
+  border-radius: 8px !important;
 }
 
-/* 切换动画优化 */
-.video-layer.layer-active {
-  animation: fadeIn 0.3s ease;
-}
+/* ========== 覆盖层和UI元素 ========== */
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* 加载动画样式 */
+/* 加载动画 */
 .live-loading {
   position: absolute;
   top: 0;
@@ -216,22 +199,18 @@ page {
   gap: 10px;
 }
 
-@keyframes loadingRotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .live-loading-img {
   width: 50px;
   height: 50px;
   animation: loadingRotate 1.2s linear infinite;
 }
 
-/* 倒计时样式 */
+@keyframes loadingRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 倒计时圆圈 */
 .live-count-down {
   position: absolute;
   top: 20px;
@@ -253,7 +232,7 @@ page {
   color: red !important;
 }
 
-/* 洗牌标记样式 */
+/* 洗牌标记 */
 .live-shuffle {
   position: absolute;
   top: 20px;
@@ -267,7 +246,7 @@ page {
   border-radius: 4px;
 }
 
-/* 通知消息样式 */
+/* 通知消息 */
 .live-notice {
   position: absolute;
   top: 10px;
@@ -294,65 +273,30 @@ page {
   }
 }
 
-/* 视频控制按钮 - 保持原有功能，确保在视频层之上 */
-.video-controls {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 30; /* 确保在视频层之上 */
-}
-
-.control-btn {
-  width: 44px;
-  height: 44px;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  
-  &:hover {
-    background: rgba(0, 0, 0, 0.9);
-    border-color: rgba(255, 255, 255, 0.6);
-    transform: scale(1.05);
-  }
-  
-  &:active {
-    transform: scale(0.95);
-  }
-}
-
-.control-icon {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
-/* 统计数据样式 */
-.live-result-detail {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 8px 10px;
+/* ========== Socket状态指示器 ========== */
+.socket-status {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 9999;
   background: rgba(0, 0, 0, 0.8);
-  font-size: 13px;
-  font-weight: 600;
-  flex-shrink: 0;
-  min-height: 32px;
-  
-  text {
-    color: white;
-    margin: 0 3px;
-    font-size: 12px;
-  }
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: white;
+  font-size: 12px;
 }
 
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-indicator text {
+  margin-left: 4px;
+}
+
+/* ========== 统计数据样式 ========== */
 .live-de-xian {
   color: #2B85E4 !important;
 }
@@ -365,7 +309,6 @@ page {
   color: #dc1a1f !important;
 }
 
-/* 在线和投注数据样式 */
 .live-online-users {
   color: #00ff88 !important;
   font-weight: bold;
@@ -376,15 +319,9 @@ page {
   font-weight: bold;
 }
 
-/* 投注区域样式 */
-.live-bet-box {
-  position: relative;
-  flex: 1;
-  min-height: 180px;
-  background: rgba(0, 0, 0, 0.9);
-  overflow: hidden;
-}
+/* ========== iframe样式 ========== */
 
+/* 投注iframe */
 .live-bet {
   position: absolute;
   top: 0;
@@ -393,19 +330,10 @@ page {
   height: 100%;
   border: none;
   z-index: 2;
+  background: transparent;
 }
 
-/* 露珠区域样式 */
-.lz_details {
-  position: relative;
-  height: 155px;
-  min-height: 155px;
-  background: rgba(0, 0, 0, 0.9);
-  overflow: hidden;
-  flex-shrink: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
+/* 露珠iframe */
 .live-details-lz {
   position: absolute;
   top: 0;
@@ -417,7 +345,7 @@ page {
   z-index: 2;
 }
 
-/* APP端头部位置样式 */
+/* ========== APP端适配 ========== */
 .for_header_postion {
   width: 100%;
   height: 1px;
@@ -425,147 +353,117 @@ page {
   flex-shrink: 0;
 }
 
-/* ========== 📱 iPhone Safari 专用修复 ========== */
-
-/* JavaScript 动态设置视口高度的支持 */
-html {
-  height: 100%;
-  /* iPhone Safari 支持 */
-  height: -webkit-fill-available;
+/* ========== 动画效果 ========== */
+.video-animation {
+  animation: refreshAnimation 1s linear infinite;
 }
 
-body {
-  min-height: 100vh;
-  /* iPhone Safari 支持 */
-  min-height: -webkit-fill-available;
+@keyframes refreshAnimation {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* iPhone Safari 专用优化 */
-@supports (-webkit-touch-callout: none) {
-  /* 仅在iPhone Safari中应用 */
-  
-  /* 使用动态计算的视口高度 */
-  .live-page {
-    height: calc(var(--real-vh, 1vh) * 100);
-    min-height: calc(var(--real-vh, 1vh) * 100);
-    max-height: calc(var(--real-vh, 1vh) * 100);
+.video-layer.layer-active {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
   }
-  
-  .live-container {
-    height: calc(var(--real-vh, 1vh) * 100);
-    min-height: calc(var(--real-vh, 1vh) * 100);
-    max-height: calc(var(--real-vh, 1vh) * 100);
-  }
-  
-  page {
-    height: calc(var(--real-vh, 1vh) * 100);
-    min-height: calc(var(--real-vh, 1vh) * 100);
-    max-height: calc(var(--real-vh, 1vh) * 100);
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-/* ========== 📱 移动端兼容代码 ========== */
+/* ========== 响应式适配（仅考虑近5年设备） ========== */
 
-/* 移动端优化 */
-@media screen and (max-width: 750px) {
+/* 中等屏幕优化 (iPhone 12/13/14标准版) */
+@media screen and (max-width: 390px) and (max-height: 844px) {
   .live-box {
-    height: 250px;
-    max-height: 250px;
+    height: 240px;
+    min-height: 240px;
   }
   
-  .opening-zoom {
-    transform: scale(1.1); /* 小屏幕适度缩放 */
-  }
-  
-  .live-result-detail {
-    font-size: 11px;
-    padding: 6px 8px;
-    min-height: 28px;
-    
-    text {
-      font-size: 10px;
-      margin: 0 2px;
-    }
-  }
-  
-  .control-btn {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .control-icon {
-    width: 20px;
-    height: 20px;
-  }
-  
-  .live-count-down {
-    width: 50px;
-    height: 50px;
-    top: 15px;
-    left: 15px;
-  }
-  
-  .live-count-second {
-    font-size: 16px;
-  }
-  
-  .lz_details {
-    height: 150px;
+  .live-bet-box {
+    min-height: 280px;
   }
 }
 
-/* 小屏幕进一步优化 */
-@media screen and (max-height: 667px) {
-  .live-container {
-    grid-template-rows: 
-        50px          
-        200px         
-        25px          
-        1fr           
-        calc(100vw * 0.3);
+/* 大屏幕优化 (iPhone Pro Max, Android大屏) */
+@media screen and (min-height: 900px) {
+  .live-box {
+    height: 280px;
+    min-height: 280px;
   }
   
-  .live-box {
-    height: 200px !important;
-    max-height: 200px !important;
+  .live-bet-box {
+    min-height: 300px;
   }
 }
 
 /* 横屏适配 */
 @media screen and (orientation: landscape) and (max-height: 500px) {
-  .live-container {
-    grid-template-rows: 
-        45px          
-        180px         
-        25px          
-        1fr           
-        calc(100vw * 0.25);
+  .live-container > *:nth-child(1) {
+    height: 45px;
   }
   
   .live-box {
     height: 180px;
-    max-height: 180px;
+    min-height: 180px;
+  }
+  
+  .live-result-detail {
+    height: 25px;
+    min-height: 25px;
+  }
+  
+  .live-bet-box {
+    min-height: 200px;
+  }
+  
+  .lz_details {
+    height: calc(100vw * 0.25);
+    min-height: calc(100vw * 0.25);
+    max-height: calc(100vw * 0.25);
   }
 }
 
-/* iPhone X及以上机型的安全区域适配 */
+/* iPhone安全区域适配 */
 @supports (padding: max(0px)) {
   .live-container {
     padding-bottom: env(safe-area-inset-bottom);
   }
   
-  /* 头部区域适配刘海 */
   .for_header_postion {
     padding-top: env(safe-area-inset-top);
     height: env(safe-area-inset-top);
   }
 }
 
-/* 确保所有内容不露出背景 */
-* {
-  box-sizing: border-box;
+/* ========== 确保内容不超出容器 ========== */
+.live-container > * {
+  width: 100%;
+  position: relative;
 }
 
-.live-container > * {
-  background-color: rgba(0, 0, 0, 0.8);
+/* 防止内容溢出 */
+.live-bet-box,
+.lz_details {
+  overflow: hidden;
+}
+
+/* 确保所有定位元素不影响布局 */
+.live-count-down,
+.live-shuffle,
+.live-notice,
+.socket-status {
+  pointer-events: none;
+}
+
+.live-count-down *,
+.socket-status * {
+  pointer-events: auto;
 }
