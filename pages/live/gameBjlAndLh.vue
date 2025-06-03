@@ -158,23 +158,25 @@
       </view>
       <!-- 视频显示区域 结束 -->
       
-      <!-- 统计数据 - 百家乐 -->
-      <view class="live-result-detail" v-if="game_type_id == 3">
-        <text class="live-de-zhuang">{{ indexLocales.itemZhuang }}:{{ betCountDetails.zhuang || 0 }}</text>
-        <text class="live-de-xian">{{ indexLocales.itemXian }}:{{ betCountDetails.xian || 0 }}</text>
-        <text class="live-de-he">{{ indexLocales.itemHe }}:{{ betCountDetails.he || 0 }}</text>
-        <text class="live-de-zhuang">{{ indexLocales.itemZhuangDui }}:{{ betCountDetails.zhuang_dui || 0 }}</text>
-        <text class="live-de-xian">{{ indexLocales.itemXianDui }}:{{ betCountDetails.xian_dui || 0 }}</text>
-        <text>{{ liveLocales.totalGames }}:{{ betCountDetails.count || 0 }}</text>
-      </view>
-      
-      <!-- 统计数据 - 龙虎 -->
-      <view class="live-result-detail" v-if="game_type_id == 2">
-        <text class="live-de-zhuang">{{ liveLocales.dragon }}:{{ betCountDetails.zhuang || 0 }}</text>
-        <text class="live-de-xian">{{ liveLocales.tiger }}:{{ betCountDetails.xian || 0 }}</text>
-        <text class="live-de-he">{{ liveLocales.peace }}:{{ betCountDetails.he || 0 }}</text>
-        <text>{{ liveLocales.totalGames }}:{{ betCountDetails.count || 0 }}</text>
-      </view>
+	<!-- 统计数据 - 百家乐 -->
+	<view class="live-result-detail" v-if="game_type_id == 3">
+	  <text class="live-online-users">{{ liveLocales.onlineUsers || '在线' }}:{{ onlineUsers }}</text>
+	  <text class="live-de-zhuang">{{ indexLocales.itemZhuang }}:{{ betCountDetails.zhuang || 0 }}</text>
+	  <text class="live-de-xian">{{ indexLocales.itemXian }}:{{ betCountDetails.xian || 0 }}</text>
+	  <text class="live-de-he">{{ indexLocales.itemHe }}:{{ betCountDetails.he || 0 }}</text>
+	  <text class="live-de-zhuang">{{ indexLocales.itemZhuangDui }}:{{ betCountDetails.zhuang_dui || 0 }}</text>
+	  <text class="live-de-xian">{{ indexLocales.itemXianDui }}:{{ betCountDetails.xian_dui || 0 }}</text>
+	  <text>{{ liveLocales.totalGames }}:{{ betCountDetails.count || 0 }}</text>
+	</view>
+
+	<!-- 统计数据 - 龙虎 -->
+	<view class="live-result-detail" v-if="game_type_id == 2">
+	  <text class="live-online-users">{{ liveLocales.onlineUsers || '在线' }}:{{ onlineUsers }}</text>
+	  <text class="live-de-zhuang">{{ liveLocales.dragon }}:{{ betCountDetails.zhuang || 0 }}</text>
+	  <text class="live-de-xian">{{ liveLocales.tiger }}:{{ betCountDetails.xian || 0 }}</text>
+	  <text class="live-de-he">{{ liveLocales.peace }}:{{ betCountDetails.he || 0 }}</text>
+	  <text>{{ liveLocales.totalGames }}:{{ betCountDetails.count || 0 }}</text>
+	</view>
       
       <!-- 投注区域 -->
       <view class="live-bet-box">
@@ -370,6 +372,10 @@ export default {
 	  aspectRatio:2.7,
 	  luzhuHeight:0,
 	  screenWidth:0,
+	  
+	   onlineUsers: 0, // 在线人数
+	   onlineTimer: null, // 在线人数更新定时器
+	   lastOnlineUpdate: 0, // 上次更新时间
     }
   },
   
@@ -428,7 +434,7 @@ export default {
 		this.luzhuHeight =  Math.floor(this.screenWidth / this.aspectRatio)
 	  }
 	})
-	
+	this.startOnlineTimer() // 页面显示时启动
   },
   
   /**
@@ -477,6 +483,8 @@ export default {
       }
       console.log('Socket状态详情:', status)
     }, 10000)
+	
+	this.initOnlineUsers() // 初始化在线人数
   },
   
   /**
@@ -488,6 +496,7 @@ export default {
     this.switchAudioByBrowerStop()
     this.isManualDisconnect = true
     this.disconnectSocket()
+	this.stopOnlineTimer() // 页面隐藏时停止
   },
   
   /**
@@ -511,9 +520,73 @@ export default {
     this.isManualDisconnect = true
     this.disconnectSocket()
     Bus.$off('setMusicType', this.addEventSettingMusic())
+	this.stopOnlineTimer() // 页面隐藏时停止
   },
   
   methods: {
+	/**
+	   * 初始化在线人数
+	   */
+	  initOnlineUsers() {
+	    // 设置初始值（200-9000范围）
+	    this.onlineUsers = Math.floor(Math.random() * (9000 - 200 + 1)) + 200
+	    this.startOnlineTimer()
+	  },
+	  
+	  /**
+	   * 启动在线人数定时器
+	   */
+	  startOnlineTimer() {
+	    this.stopOnlineTimer() // 先清除现有定时器
+	    
+	    this.onlineTimer = setInterval(() => {
+	      this.updateOnlineUsers()
+	    }, this.getRandomInterval())
+	  },
+	  
+	  /**
+	   * 停止在线人数定时器
+	   */
+	  stopOnlineTimer() {
+	    if (this.onlineTimer) {
+	      clearInterval(this.onlineTimer)
+	      this.onlineTimer = null
+	    }
+	  },
+	  
+	  /**
+	   * 更新在线人数
+	   */
+	  updateOnlineUsers() {
+	    const currentTime = Date.now()
+	    
+	    // 防止更新过于频繁
+	    if (currentTime - this.lastOnlineUpdate < 25000) {
+	      return
+	    }
+	    
+	    // 计算新的在线人数（小幅度变化）
+	    const changeRange = Math.floor(this.onlineUsers * 0.05) // 变化幅度为当前值的5%
+	    const change = Math.floor(Math.random() * (changeRange * 2 + 1)) - changeRange
+	    
+	    let newUsers = this.onlineUsers + change
+	    
+	    // 确保在合理范围内
+	    newUsers = Math.max(200, Math.min(9000, newUsers))
+	    
+	    this.onlineUsers = newUsers
+	    this.lastOnlineUpdate = currentTime
+	    
+	    // 重新设置定时器（随机间隔）
+	    this.startOnlineTimer()
+	  },
+	  
+	  /**
+	   * 获取随机更新间隔（30-60秒）
+	   */
+	  getRandomInterval() {
+	    return Math.floor(Math.random() * (60000 - 30000 + 1)) + 30000
+	  },
     /**
      * 备用提示方法
      */
@@ -1832,7 +1905,10 @@ page {
     height: 150px;
   }
 }
-
+.live-online-users {
+  color: #00ff88 !important; // 绿色表示在线状态
+  font-weight: bold;
+}
 /* 确保所有内容不露出背景 */
 * {
   box-sizing: border-box;
