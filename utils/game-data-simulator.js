@@ -10,8 +10,8 @@
 class OnlineUsersSimulator {
   constructor(options = {}) {
     // 配置参数
-    this.min = options.min || 200
-    this.max = options.max || 9000
+    this.min = options.min || 30
+    this.max = options.max || 100
     this.changePercentage = options.changePercentage || 0.05 // 每次变化幅度为当前值的5%
     this.updateInterval = {
       min: options.updateInterval?.min || 30000, // 最小更新间隔30秒
@@ -131,7 +131,7 @@ class BetAmountSimulator {
   constructor(options = {}) {
     // 配置参数
     this.minTarget = options.minTarget || 0
-    this.maxTarget = options.maxTarget || 200000 // 最大20万
+    this.maxTarget = options.maxTarget || 2000 // 最大2000
     this.updateFrequency = options.updateFrequency || 2.5 // 每秒更新次数
     this.bettingDuration = options.bettingDuration || 35 // 投注持续时间（秒）
     this.updateInterval = options.updateInterval || 400 // 更新间隔（毫秒）
