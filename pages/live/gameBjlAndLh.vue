@@ -28,6 +28,7 @@
         :tableType="tableType" 
         :tableDataInfo="initTableInfo" 
         :tableRunInfo="tableRunInfo"
+        @headerBack="handleHeaderBack"
       />
       
       <!-- APP端头部位置占位 -->
@@ -73,23 +74,6 @@
             ></iframe>
           </view>
           
-          <!-- 近景视频层 - 始终加载 -->
-<!--          <view 
-            class="video-layer" 
-            :class="{
-              'layer-active': videoEnlarge,
-              'layer-hidden': !videoEnlarge
-            }"
-          >
-            <iframe 
-              v-if="videoNear"
-              class="live-details"
-              frameborder="0" 
-              scrolling="no" 
-              :src="videoNear"
-              @load="onVideoLoaded('near')"
-            ></iframe>
-          </view> -->
         </view>
         
         <!-- 倒计时圈圈 -->
@@ -127,58 +111,30 @@
           {{ showWinMsgText }}
         </view>
         
-        <!-- 视频控制按钮 - 保持原有功能 -->
-        <view class="video-controls">
-          <!-- 放大缩小按钮 - 保持远景/近景切换功能 -->
-<!--          <view class="control-btn" @click="handleZoom()">
-            <image 
-              src="/static/img/live/enlarge.svg" 
-              mode="" 
-              v-if="!videoEnlarge" 
-              class="control-icon"
-            />
-            <image 
-              src="/static/img/live/reduce.svg" 
-              mode="" 
-              v-if="videoEnlarge" 
-              class="control-icon"
-            />
-          </view> -->
-          
-          <!-- 刷新按钮 - 优化为仅在必要时使用 -->
-<!--          <view class="control-btn" @tap="refreshIframe()">
-            <u-icon 
-              :class="{'video-animation': startAnimation}" 
-              name="reload" 
-              color="#ffffbc" 
-              size="24"
-            />
-          </view> -->
-        </view>
       </view>
       <!-- 视频显示区域 结束 -->
       
-	<!-- 统计数据 - 百家乐 -->
-	<view class="live-result-detail" v-if="game_type_id == 3">
-	  <text class="live-online-users">在线:{{ onlineUsers }}</text>
-	  <text class="live-bet-amount">投注:{{ formatBetAmount(betAmount) }}</text>
-	  <text class="live-de-zhuang">{{ indexLocales.itemZhuang }}:{{ betCountDetails.zhuang || 0 }}</text>
-	  <text class="live-de-xian">{{ indexLocales.itemXian }}:{{ betCountDetails.xian || 0 }}</text>
-	  <text class="live-de-he">{{ indexLocales.itemHe }}:{{ betCountDetails.he || 0 }}</text>
-	  <text class="live-de-zhuang">{{ indexLocales.itemZhuangDui }}:{{ betCountDetails.zhuang_dui || 0 }}</text>
-	  <text class="live-de-xian">{{ indexLocales.itemXianDui }}:{{ betCountDetails.xian_dui || 0 }}</text>
-	  <text>{{ liveLocales.totalGames }}:{{ betCountDetails.count || 0 }}</text>
-	</view>
+      <!-- 统计数据 - 百家乐 -->
+      <view class="live-result-detail" v-if="game_type_id == 3">
+        <text class="live-online-users">在线:{{ onlineUsers }}</text>
+        <text class="live-bet-amount">投注:{{ formatBetAmount(betAmount) }}</text>
+        <text class="live-de-zhuang">{{ indexLocales.itemZhuang }}:{{ betCountDetails.zhuang || 0 }}</text>
+        <text class="live-de-xian">{{ indexLocales.itemXian }}:{{ betCountDetails.xian || 0 }}</text>
+        <text class="live-de-he">{{ indexLocales.itemHe }}:{{ betCountDetails.he || 0 }}</text>
+        <text class="live-de-zhuang">{{ indexLocales.itemZhuangDui }}:{{ betCountDetails.zhuang_dui || 0 }}</text>
+        <text class="live-de-xian">{{ indexLocales.itemXianDui }}:{{ betCountDetails.xian_dui || 0 }}</text>
+        <text>{{ liveLocales.totalGames }}:{{ betCountDetails.count || 0 }}</text>
+      </view>
 
-	<!-- 统计数据 - 龙虎 -->
-	<view class="live-result-detail" v-if="game_type_id == 2">
-	  <text class="live-online-users">在线:{{ onlineUsers }}</text>
-	  <text class="live-bet-amount">投注:{{ formatBetAmount(betAmount) }}</text>
-	  <text class="live-de-zhuang">{{ liveLocales.dragon }}:{{ betCountDetails.zhuang || 0 }}</text>
-	  <text class="live-de-xian">{{ liveLocales.tiger }}:{{ betCountDetails.xian || 0 }}</text>
-	  <text class="live-de-he">{{ liveLocales.peace }}:{{ betCountDetails.he || 0 }}</text>
-	  <text>{{ liveLocales.totalGames }}:{{ betCountDetails.count || 0 }}</text>
-	</view>
+      <!-- 统计数据 - 龙虎 -->
+      <view class="live-result-detail" v-if="game_type_id == 2">
+        <text class="live-online-users">在线:{{ onlineUsers }}</text>
+        <text class="live-bet-amount">投注:{{ formatBetAmount(betAmount) }}</text>
+        <text class="live-de-zhuang">{{ liveLocales.dragon }}:{{ betCountDetails.zhuang || 0 }}</text>
+        <text class="live-de-xian">{{ liveLocales.tiger }}:{{ betCountDetails.xian || 0 }}</text>
+        <text class="live-de-he">{{ liveLocales.peace }}:{{ betCountDetails.he || 0 }}</text>
+        <text>{{ liveLocales.totalGames }}:{{ betCountDetails.count || 0 }}</text>
+      </view>
       
       <!-- 投注区域 -->
       <view class="live-bet-box">
@@ -283,7 +239,31 @@ export default {
   },
   
   methods: {
-    ...gameLogic.methods
+    ...gameLogic.methods,
+    
+    // 添加缺失的方法
+    handleZoom() {
+      this.videoEnlarge = !this.videoEnlarge
+    },
+    
+    refreshIframe() {
+      this.startAnimation = true
+      setTimeout(() => {
+        this.startAnimation = false
+      }, 1000)
+      
+      // 刷新视频
+      this.getTableInfoVideo()
+    },
+    
+    onVideoLoaded(type) {
+      console.log('视频加载完成:', type)
+    },
+    
+    handleHeaderBack() {
+      // 处理头部返回事件
+      console.log('头部返回事件')
+    }
   }
 }
 </script>

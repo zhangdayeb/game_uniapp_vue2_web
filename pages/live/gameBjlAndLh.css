@@ -1,7 +1,23 @@
+/* ========================================
+   gameBjlAndLh.css - 最终完整版本
+   已修复iPhone Safari视口问题
+   ======================================== */
+
+/* ========== iPhone Safari 视口修复 ========== */
+:root {
+  --real-vh: 1vh; /* 默认值，会被JavaScript动态更新 */
+}
+
 /* 基础页面样式 */
 page {
   height: 100vh;
   overflow: hidden;
+  
+  /* iPhone Safari 修复 */
+  @supports (-webkit-touch-callout: none) {
+    height: calc(var(--real-vh, 1vh) * 100);
+    min-height: calc(var(--real-vh, 1vh) * 100);
+  }
 }
 
 /* Socket状态指示器样式 */
@@ -48,6 +64,12 @@ page {
   height: 100vh;
   background: #000;
   overflow: hidden;
+  
+  /* iPhone Safari 修复 */
+  @supports (-webkit-touch-callout: none) {
+    height: calc(var(--real-vh, 1vh) * 100);
+    min-height: calc(var(--real-vh, 1vh) * 100);
+  }
 }
 
 /* 主要布局样式 */
@@ -60,7 +82,13 @@ page {
       250px         /* 区域2固定高度 */
       28px          /* 区域3固定高度 */
       1fr           /* 区域4自由压缩 */
-      calc(100vw * 0.36); /* 区域5保持宽高比(假设比例为5:2) */
+      calc(100vw * 0.36); /* 区域5保持宽高比 */
+  
+  /* iPhone Safari 修复 */
+  @supports (-webkit-touch-callout: none) {
+    height: calc(var(--real-vh, 1vh) * 100);
+    min-height: calc(var(--real-vh, 1vh) * 100);
+  }
 }
 
 /* 视频区域样式 */
@@ -74,7 +102,7 @@ page {
   flex-shrink: 0;
 }
 
-/* 🎯 优化后的视频容器 - 支持整体缩放效果 */
+/* 优化后的视频容器 - 支持整体缩放效果 */
 .video-container {
   position: relative;
   width: 100%;
@@ -83,7 +111,7 @@ page {
   transition: transform 0.5s ease, filter 0.3s ease;
 }
 
-/* 🎯 视频层 */
+/* 视频层 */
 .video-layer {
   position: absolute;
   top: 0;
@@ -93,14 +121,14 @@ page {
   transition: opacity 0.3s ease, z-index 0.3s ease;
 }
 
-/* 🎯 激活状态的视频层 */
+/* 激活状态的视频层 */
 .layer-active {
   opacity: 1;
   z-index: 2;
   pointer-events: auto;
 }
 
-/* 🎯 隐藏状态的视频层 - 保持加载但不显示 */
+/* 隐藏状态的视频层 - 保持加载但不显示 */
 .layer-hidden {
   opacity: 0;
   z-index: 1;
@@ -115,10 +143,11 @@ page {
   background: #000;
 }
 
-/* 🎯 缩放效果类 */
+/* 缩放效果类 */
 .normal {
   transform: scale(1);
 }
+
 /* 视频缩放 */
 .opening-zoom {
   /* 超大缩放倍数 */
@@ -149,7 +178,7 @@ page {
   border-radius: 12px !important;
 }
 
-/* 🎯 切换动画优化 */
+/* 切换动画优化 */
 .video-layer.layer-active {
   animation: fadeIn 0.3s ease;
 }
@@ -265,7 +294,7 @@ page {
   }
 }
 
-/* 🎯 视频控制按钮 - 保持原有功能，确保在视频层之上 */
+/* 视频控制按钮 - 保持原有功能，确保在视频层之上 */
 .video-controls {
   position: absolute;
   top: 15px;
@@ -336,14 +365,14 @@ page {
   color: #dc1a1f !important;
 }
 
-/* 🎯 新增：在线和投注数据样式 */
+/* 在线和投注数据样式 */
 .live-online-users {
-  color: #00ff88 !important; // 绿色表示在线状态
+  color: #00ff88 !important;
   font-weight: bold;
 }
 
 .live-bet-amount {
-  color: #ffaa00 !important; // 橙色表示投注金额
+  color: #ffaa00 !important;
   font-weight: bold;
 }
 
@@ -396,7 +425,48 @@ page {
   flex-shrink: 0;
 }
 
-/* 🎯 移动端优化 */
+/* ========== 📱 iPhone Safari 专用修复 ========== */
+
+/* JavaScript 动态设置视口高度的支持 */
+html {
+  height: 100%;
+  /* iPhone Safari 支持 */
+  height: -webkit-fill-available;
+}
+
+body {
+  min-height: 100vh;
+  /* iPhone Safari 支持 */
+  min-height: -webkit-fill-available;
+}
+
+/* iPhone Safari 专用优化 */
+@supports (-webkit-touch-callout: none) {
+  /* 仅在iPhone Safari中应用 */
+  
+  /* 使用动态计算的视口高度 */
+  .live-page {
+    height: calc(var(--real-vh, 1vh) * 100);
+    min-height: calc(var(--real-vh, 1vh) * 100);
+    max-height: calc(var(--real-vh, 1vh) * 100);
+  }
+  
+  .live-container {
+    height: calc(var(--real-vh, 1vh) * 100);
+    min-height: calc(var(--real-vh, 1vh) * 100);
+    max-height: calc(var(--real-vh, 1vh) * 100);
+  }
+  
+  page {
+    height: calc(var(--real-vh, 1vh) * 100);
+    min-height: calc(var(--real-vh, 1vh) * 100);
+    max-height: calc(var(--real-vh, 1vh) * 100);
+  }
+}
+
+/* ========== 📱 移动端兼容代码 ========== */
+
+/* 移动端优化 */
 @media screen and (max-width: 750px) {
   .live-box {
     height: 250px;
@@ -441,6 +511,53 @@ page {
   
   .lz_details {
     height: 150px;
+  }
+}
+
+/* 小屏幕进一步优化 */
+@media screen and (max-height: 667px) {
+  .live-container {
+    grid-template-rows: 
+        50px          
+        200px         
+        25px          
+        1fr           
+        calc(100vw * 0.3);
+  }
+  
+  .live-box {
+    height: 200px !important;
+    max-height: 200px !important;
+  }
+}
+
+/* 横屏适配 */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+  .live-container {
+    grid-template-rows: 
+        45px          
+        180px         
+        25px          
+        1fr           
+        calc(100vw * 0.25);
+  }
+  
+  .live-box {
+    height: 180px;
+    max-height: 180px;
+  }
+}
+
+/* iPhone X及以上机型的安全区域适配 */
+@supports (padding: max(0px)) {
+  .live-container {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* 头部区域适配刘海 */
+  .for_header_postion {
+    padding-top: env(safe-area-inset-top);
+    height: env(safe-area-inset-top);
   }
 }
 

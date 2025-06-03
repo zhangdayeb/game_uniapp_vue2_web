@@ -1,4 +1,4 @@
-// pages/live/gameBjlAndLh.js - 精简版（移除模拟逻辑）
+// pages/live/gameBjlAndLh.js - 最终完整版本
 import { GameSocketManager } from '@/utils/socket-manager.js'
 import configService from '@/common/service/config.service.js'
 import apiService from '@/api/game.js'
@@ -452,7 +452,7 @@ export default {
     dao_ji_shi(tableRunInfo) {
       console.log('倒计时更新:', tableRunInfo)
       
-      // 🎯 集成数据模拟器的投注逻辑
+      // 集成数据模拟器的投注逻辑
       if (this.dataSimulator) {
         // 当倒计时从0变为正数时，开始新的投注周期
         if (this.endTime <= 0 && tableRunInfo.end_time > 0) {
