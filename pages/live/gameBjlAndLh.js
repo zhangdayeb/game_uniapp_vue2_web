@@ -1,4 +1,4 @@
-// pages/live/gameBjlAndLh.js - 清理版本（移除CSS变量依赖）
+// pages/live/gameBjlAndLh.js - 修改版本（添加Safari视口兼容）
 import { GameSocketManager } from '@/utils/socket-manager.js'
 import configService from '@/common/service/config.service.js'
 import apiService from '@/api/game.js'
@@ -97,6 +97,11 @@ export default {
       
       // 游戏数据模拟器
       dataSimulator: null,
+      
+      // Safari 视口相关 - 新增
+      safariViewportFixer: null,
+      viewportDebounceTimer: null,
+      lastViewportHeight: 0,
     }
   },
 
@@ -122,6 +127,9 @@ export default {
       this.lzUrl = configService.lzLhUrlMain + this.liveLocales.lzurl + '/lh_bet_xc.html'
     }
     
+    // 初始化Safari视口修复器 - 新增
+    this.initSafariViewportFixer()
+    
     this.initSocket()
     this.initDataSimulator()
   },
@@ -134,11 +142,14 @@ export default {
     this.isManualDisconnect = false
     this.connectGameSocket()
     
-    // 动态设置露珠高度
+    // 动态设置露珠高度和修复视口 - 修改
     uni.getSystemInfo({
       success: (res) => {
         this.screenWidth = res.windowWidth
         this.luzhuHeight = Math.floor(this.screenWidth / this.aspectRatio)
+        
+        // 修复Safari视口高度
+        this.updateSafariViewportHeight()
       }
     })
     
@@ -174,6 +185,12 @@ export default {
     this.getGameBetCount()
     this.addEventSettingMusic()
     
+    // 初始化Safari视口修复 - 新增
+    this.$nextTick(() => {
+      this.initSafariViewportFixer()
+      this.addViewportListeners()
+    })
+    
     // 关闭加载动画
     setTimeout(() => {
       this.$refs.loading.close()
@@ -193,10 +210,189 @@ export default {
   
   beforeDestroy() {
     this.cleanup()
+    this.removeViewportListeners() // 新增
     Bus.$off('setMusicType', this.addEventSettingMusic)
   },
   
   methods: {
+    // ==================== Safari 视口兼容方法 - 新增区域 ====================
+    
+    /**
+     * 初始化Safari视口修复器
+     */
+    initSafariViewportFixer() {
+      // 检测是否是iOS Safari
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+      
+      if (isIOS || isSafari) {
+        console.log('检测到Safari浏览器，启用视口修复')
+        this.updateSafariViewportHeight()
+      } else {
+        // 非Safari浏览器使用标准视口高度
+        this.setStandardViewportHeight()
+      }
+    },
+    
+    /**
+     * 更新Safari视口高度
+     */
+    updateSafariViewportHeight() {
+      try {
+        // 获取真实的视口高度
+        const realHeight = window.innerHeight
+        
+        // 防止重复设置相同的高度
+        if (Math.abs(realHeight - this.lastViewportHeight) < 5) {
+          return
+        }
+        
+        this.lastViewportHeight = realHeight
+        
+        // 设置CSS自定义属性
+        document.documentElement.style.setProperty('--screen-height', `${realHeight}px`)
+        
+        console.log('Safari视口高度更新:', {
+          windowInnerHeight: realHeight,
+          documentHeight: document.documentElement.clientHeight,
+          bodyHeight: document.body.clientHeight
+        })
+        
+        // 强制重新渲染
+        this.$forceUpdate()
+        
+      } catch (error) {
+        console.error('设置Safari视口高度失败:', error)
+        this.setStandardViewportHeight()
+      }
+    },
+    
+    /**
+     * 设置标准视口高度（非Safari浏览器）
+     */
+    setStandardViewportHeight() {
+      try {
+        document.documentElement.style.setProperty('--screen-height', '100vh')
+        console.log('使用标准视口高度: 100vh')
+      } catch (error) {
+        console.error('设置标准视口高度失败:', error)
+      }
+    },
+    
+    /**
+     * 防抖处理视口变化
+     */
+    debounceViewportUpdate() {
+      if (this.viewportDebounceTimer) {
+        clearTimeout(this.viewportDebounceTimer)
+      }
+      
+      this.viewportDebounceTimer = setTimeout(() => {
+        this.updateSafariViewportHeight()
+      }, 100)
+    },
+    
+    /**
+     * 添加视口监听器
+     */
+    addViewportListeners() {
+      // 检测是否是移动设备
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      
+      if (!isMobile) {
+        return
+      }
+      
+      // 窗口大小改变事件
+      window.addEventListener('resize', this.handleViewportResize.bind(this), { passive: true })
+      
+      // 方向改变事件
+      window.addEventListener('orientationchange', this.handleOrientationChange.bind(this), { passive: true })
+      
+      // 页面可见性改变事件
+      document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this))
+      
+      // iOS特有的滚动事件（Safari工具栏显示/隐藏）
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      if (isIOS) {
+        window.addEventListener('scroll', this.handleSafariScroll.bind(this), { passive: true })
+      }
+      
+      console.log('视口监听器已添加')
+    },
+    
+    /**
+     * 移除视口监听器
+     */
+    removeViewportListeners() {
+      window.removeEventListener('resize', this.handleViewportResize)
+      window.removeEventListener('orientationchange', this.handleOrientationChange)
+      document.removeEventListener('visibilitychange', this.handleVisibilityChange)
+      window.removeEventListener('scroll', this.handleSafariScroll)
+      
+      if (this.viewportDebounceTimer) {
+        clearTimeout(this.viewportDebounceTimer)
+        this.viewportDebounceTimer = null
+      }
+      
+      console.log('视口监听器已移除')
+    },
+    
+    /**
+     * 处理窗口大小改变
+     */
+    handleViewportResize() {
+      console.log('窗口大小改变，当前高度:', window.innerHeight)
+      this.debounceViewportUpdate()
+    },
+    
+    /**
+     * 处理方向改变
+     */
+    handleOrientationChange() {
+      console.log('设备方向改变')
+      // 方向改变时需要延迟一下，等待浏览器完成重新布局
+      setTimeout(() => {
+        this.updateSafariViewportHeight()
+        
+        // 重新计算露珠高度
+        uni.getSystemInfo({
+          success: (res) => {
+            this.screenWidth = res.windowWidth
+            this.luzhuHeight = Math.floor(this.screenWidth / this.aspectRatio)
+          }
+        })
+      }, 300)
+    },
+    
+    /**
+     * 处理页面可见性改变
+     */
+    handleVisibilityChange() {
+      if (!document.hidden) {
+        console.log('页面变为可见，更新视口高度')
+        setTimeout(() => {
+          this.updateSafariViewportHeight()
+        }, 100)
+      }
+    },
+    
+    /**
+     * 处理Safari滚动事件
+     */
+    handleSafariScroll() {
+      // Safari工具栏显示/隐藏时会触发滚动，此时需要更新视口高度
+      this.debounceViewportUpdate()
+    },
+    
+    /**
+     * 手动强制更新视口高度（对外暴露的方法）
+     */
+    forceUpdateViewportHeight() {
+      console.log('手动强制更新视口高度')
+      this.updateSafariViewportHeight()
+    },
+    
     // ==================== 核心业务方法 ====================
     
     /**
@@ -211,6 +407,9 @@ export default {
       if (this.dataSimulator) {
         this.dataSimulator.stop()
       }
+      
+      // 清理视口相关定时器 - 新增
+      this.removeViewportListeners()
       
       if (this.connectionRetryTimer) {
         clearTimeout(this.connectionRetryTimer)
