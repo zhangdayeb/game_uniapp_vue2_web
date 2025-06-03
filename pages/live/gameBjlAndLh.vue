@@ -160,7 +160,8 @@
       
 	<!-- 统计数据 - 百家乐 -->
 	<view class="live-result-detail" v-if="game_type_id == 3">
-	  <text class="live-online-users">{{ liveLocales.onlineUsers || '在线' }}:{{ onlineUsers }}</text>
+	  <text class="live-online-users">在线:{{ onlineUsers }}</text>
+	  <text class="live-bet-amount">投注:{{ formatBetAmount(betAmount) }}</text>
 	  <text class="live-de-zhuang">{{ indexLocales.itemZhuang }}:{{ betCountDetails.zhuang || 0 }}</text>
 	  <text class="live-de-xian">{{ indexLocales.itemXian }}:{{ betCountDetails.xian || 0 }}</text>
 	  <text class="live-de-he">{{ indexLocales.itemHe }}:{{ betCountDetails.he || 0 }}</text>
@@ -171,7 +172,8 @@
 
 	<!-- 统计数据 - 龙虎 -->
 	<view class="live-result-detail" v-if="game_type_id == 2">
-	  <text class="live-online-users">{{ liveLocales.onlineUsers || '在线' }}:{{ onlineUsers }}</text>
+	  <text class="live-online-users">在线:{{ onlineUsers }}</text>
+	  <text class="live-bet-amount">投注:{{ formatBetAmount(betAmount) }}</text>
 	  <text class="live-de-zhuang">{{ liveLocales.dragon }}:{{ betCountDetails.zhuang || 0 }}</text>
 	  <text class="live-de-xian">{{ liveLocales.tiger }}:{{ betCountDetails.xian || 0 }}</text>
 	  <text class="live-de-he">{{ liveLocales.peace }}:{{ betCountDetails.he || 0 }}</text>
@@ -373,9 +375,18 @@ export default {
 	  luzhuHeight:0,
 	  screenWidth:0,
 	  
-	   onlineUsers: 0, // 在线人数
-	   onlineTimer: null, // 在线人数更新定时器
-	   lastOnlineUpdate: 0, // 上次更新时间
+	  // 在线人数相关（保持现有）
+	  onlineUsers: 0, // 在线人数
+	  onlineTimer: null, // 在线人数更新定时器
+	  lastOnlineUpdate: 0, // 上次更新时间
+	  
+	  // 🎯 新增：投注数据相关
+	  betAmount: 0, // 当前投注金额
+	  betTimer: null, // 投注增长定时器
+	  betTargetAmount: 0, // 目标投注金额（0-20万）
+	  betIncrement: 0, // 每次增长的金额
+	  isBettingPhase: false, // 是否在投注阶段
+	  lastBetReset: 0, // 上次重置投注的时间
     }
   },
   
@@ -435,6 +446,7 @@ export default {
 	  }
 	})
 	this.startOnlineTimer() // 页面显示时启动
+	this.startBetTimer() // 🎯 页面显示时启动投注定时器
   },
   
   /**
@@ -485,6 +497,7 @@ export default {
     }, 10000)
 	
 	this.initOnlineUsers() // 初始化在线人数
+	this.initBetAmount()   // 🎯 初始化投注数据
   },
   
   /**
@@ -497,6 +510,7 @@ export default {
     this.isManualDisconnect = true
     this.disconnectSocket()
 	this.stopOnlineTimer() // 页面隐藏时停止
+	this.stopBetTimer() // 🎯 页面隐藏时停止投注定时器
   },
   
   /**
@@ -508,6 +522,8 @@ export default {
     this.switchAudioByBrowerStop()
     this.isManualDisconnect = true
     this.disconnectSocket()
+	this.stopOnlineTimer()
+	this.stopBetTimer() // 🎯 页面退出时停止投注定时器
   },
   
   /**
@@ -520,10 +536,137 @@ export default {
     this.isManualDisconnect = true
     this.disconnectSocket()
     Bus.$off('setMusicType', this.addEventSettingMusic())
-	this.stopOnlineTimer() // 页面隐藏时停止
+	this.stopOnlineTimer()
+	this.stopBetTimer() // 🎯 组件销毁时停止投注定时器
   },
   
   methods: {
+	/**
+	 * 🎯 初始化投注数据
+	 */
+	initBetAmount() {
+	  this.betAmount = 0
+	  this.betTargetAmount = this.getRandomBetTarget()
+	  this.betIncrement = this.calculateBetIncrement()
+	  this.isBettingPhase = false
+	},
+	
+	/**
+	 * 🎯 获取随机投注目标金额（0-20万）
+	 */
+	getRandomBetTarget() {
+	  return Math.floor(Math.random() * 200000) // 0-200000
+	},
+	
+	/**
+	 * 🎯 计算投注增长量
+	 */
+	calculateBetIncrement() {
+	  // 假设投注阶段大约30-40秒，每秒更新2-3次
+	  const updateFrequency = 2.5 // 每秒更新次数
+	  const bettingDuration = 35 // 投注持续时间（秒）
+	  const totalUpdates = updateFrequency * bettingDuration
+	  
+	  return this.betTargetAmount / totalUpdates
+	},
+	
+	/**
+	 * 🎯 格式化投注金额显示
+	 */
+	formatBetAmount(amount) {
+	  if (amount >= 10000) {
+	    return (amount / 10000).toFixed(1) + '万'
+	  }
+	  return Math.floor(amount).toLocaleString()
+	},
+	
+	/**
+	 * 🎯 启动投注增长定时器
+	 */
+	startBetTimer() {
+	  this.stopBetTimer() // 先清除现有定时器
+	  
+	  if (!this.isBettingPhase) {
+	    return
+	  }
+	  
+	  this.betTimer = setInterval(() => {
+	    this.updateBetAmount()
+	  }, 400) // 每400ms更新一次，约每秒2.5次
+	},
+	
+	/**
+	 * 🎯 停止投注定时器
+	 */
+	stopBetTimer() {
+	  if (this.betTimer) {
+	    clearInterval(this.betTimer)
+	    this.betTimer = null
+	  }
+	},
+	
+	/**
+	 * 🎯 更新投注金额
+	 */
+	updateBetAmount() {
+	  if (!this.isBettingPhase) {
+	    this.stopBetTimer()
+	    return
+	  }
+	  
+	  // 增加投注金额
+	  this.betAmount += this.betIncrement
+	  
+	  // 添加一些随机性，让增长更自然
+	  const randomFactor = 0.8 + Math.random() * 0.4 // 0.8-1.2的随机因子
+	  this.betAmount += this.betIncrement * randomFactor * 0.1
+	  
+	  // 确保不超过目标金额
+	  if (this.betAmount >= this.betTargetAmount) {
+	    this.betAmount = this.betTargetAmount
+	    this.stopBetTimer()
+	  }
+	  
+	  // 确保不小于0
+	  this.betAmount = Math.max(0, this.betAmount)
+	},
+	
+	/**
+	 * 🎯 重置投注数据（新局开始时调用）
+	 */
+	resetBetAmount(reason = '') {
+	  console.log('🎯 重置投注金额:', reason)
+	  
+	  this.stopBetTimer()
+	  this.betAmount = 0
+	  this.betTargetAmount = this.getRandomBetTarget()
+	  this.betIncrement = this.calculateBetIncrement()
+	  this.isBettingPhase = false
+	  this.lastBetReset = Date.now()
+	  
+	  console.log('新的投注目标:', this.formatBetAmount(this.betTargetAmount))
+	},
+	
+	/**
+	 * 🎯 开始投注阶段
+	 */
+	startBettingPhase(reason = '') {
+	  console.log('🎯 开始投注阶段:', reason)
+	  
+	  this.isBettingPhase = true
+	  this.startBetTimer()
+	},
+	
+	/**
+	 * 🎯 结束投注阶段
+	 */
+	stopBettingPhase(reason = '') {
+	  console.log('🎯 结束投注阶段:', reason)
+	  
+	  this.isBettingPhase = false
+	  this.stopBetTimer()
+	},
+	
 	/**
 	   * 初始化在线人数
 	   */
@@ -1201,12 +1344,36 @@ export default {
     },
     
     /**
-     * 设置游戏桌倒计时信息
+     * 🎯 设置游戏桌倒计时信息（更新版本，包含投注逻辑）
      * @param {Object} tableRunInfo - 后台返回的台桌运行信息
      */
     dao_ji_shi(tableRunInfo) {
       console.log('🎯 dao_ji_shi被调用:', tableRunInfo)
       console.log('之前的endTime:', this.endTime)
+      
+      // 🎯 新增：投注数据处理逻辑
+      
+      // 当倒计时从0变为正数时，开始新的投注周期
+      if (this.endTime <= 0 && tableRunInfo.end_time > 0) {
+        this.resetBetAmount('新局开始')
+        // 延迟1秒开始投注增长，让重置更自然
+        setTimeout(() => {
+          this.startBettingPhase('倒计时开始')
+        }, 1000)
+      }
+      
+      // 当倒计时结束时，停止投注增长
+      if (tableRunInfo.end_time == 0 && tableRunInfo.run_status == 2) {
+        this.stopBettingPhase('开牌中')
+      }
+      
+      // 当倒计时较少时（比如最后10秒），加快投注增长速度
+      if (tableRunInfo.end_time <= 10 && tableRunInfo.end_time > 0 && this.isBettingPhase) {
+        // 在最后10秒加快增长速度
+        this.betIncrement *= 1.2
+      }
+      
+      // 🎯 原有的倒计时逻辑保持不变
       
       // 设置倒计时颜色 - 低于6秒显示红色
       if (tableRunInfo.end_time < 6) {
@@ -1544,21 +1711,15 @@ page {
 
 /* 主要布局样式 */
 .live-container {
-  // position: relative;
-  // height: 100vh;
-  // display: flex;
-  // flex-direction: column;
-  // background: #000;
-  
-    height: 100vh;
-    overflow: hidden;
-    display: grid;
-    grid-template-rows: 
-        55px          /* 区域1固定高度 */
-        250px         /* 区域2固定高度 */
-        28px          /* 区域3固定高度 */
-        1fr           /* 区域4自由压缩 */
-        calc(100vw * 0.36); /* 区域5保持宽高比(假设比例为5:2) */
+  height: 100vh;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 
+      55px          /* 区域1固定高度 */
+      250px         /* 区域2固定高度 */
+      28px          /* 区域3固定高度 */
+      1fr           /* 区域4自由压缩 */
+      calc(100vw * 0.36); /* 区域5保持宽高比(假设比例为5:2) */
 }
 
 /* 视频区域样式 */
@@ -1646,8 +1807,6 @@ page {
   border: 4px solid rgba(255, 255, 255, 0.8) !important;
   border-radius: 12px !important;
 }
-
-
 
 /* 🎯 切换动画优化 */
 .video-layer.layer-active {
@@ -1836,6 +1995,17 @@ page {
   color: #dc1a1f !important;
 }
 
+/* 🎯 新增：在线和投注数据样式 */
+.live-online-users {
+  color: #00ff88 !important; // 绿色表示在线状态
+  font-weight: bold;
+}
+
+.live-bet-amount {
+  color: #ffaa00 !important; // 橙色表示投注金额
+  font-weight: bold;
+}
+
 /* 投注区域样式 */
 .live-bet-box {
   position: relative;
@@ -1932,10 +2102,7 @@ page {
     height: 150px;
   }
 }
-.live-online-users {
-  color: #00ff88 !important; // 绿色表示在线状态
-  font-weight: bold;
-}
+
 /* 确保所有内容不露出背景 */
 * {
   box-sizing: border-box;
