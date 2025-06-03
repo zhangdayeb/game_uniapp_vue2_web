@@ -19,7 +19,7 @@ let NN_WS_URL       = 'wss://wssnn.wuming888.com'
 let THREE_WS_URL    = 'wss://wssthree.wuming888.com'
 //露珠地址  
 let LZ_BASE_URL 	= 'https://h5lzv2.wuming888.com/'
-let LZ_NN_BASE_URL 	= 'https://h5lz.wuming888.com/'
+let LZ_NN_BASE_URL 	= 'https://h5lzv2.wuming888.com/'
 
 let LZ_BJL_URL_LIST		= LZ_BASE_URL
 let LZ_LH_URL_LIST		= LZ_BASE_URL

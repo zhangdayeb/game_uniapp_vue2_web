@@ -1,8 +1,7 @@
 <template>
 	<!-- :class="{'switch-run-draw': show}" -->
 	<view class="switch-panel" id="switch-panel" :class="{'switch-run-draw': show, 'switch-close-draw':closePanelState=='close'}" @click="closeModel($event)">
-		<!-- 
-		<u-popup v-model="show" mode="right" @close="closeModel" :mask="false" width="78%"
+		<!-- <u-popup v-model="show" mode="right" @close="closeModel" :mask="false" width="78%"
 			:custom-style="{top: '50rpx'}">
 			<scroll-view scroll-y="auto" style="padding-top: 10rpx;">
 				<view class="tableItem" v-for="(item, index) in get_table" :key="index">
@@ -16,8 +15,7 @@
 					</view>
 				</view>
 			</scroll-view>
-		</u-popup>
-		 -->
+		</u-popup> -->
 		<view class="switch-popup"  >
 			<!-- style="height: 100%; position: absolute;right: 0;width: 50%;" -->
 			<scroll-view scroll-y="auto" style="padding-top: 10rpx;">
@@ -82,10 +80,11 @@
 				this.show = val
 				if (val) {
 					this.closePanelState = 'open'
-					this.initSocket()
-					return
-					// this.getGameTable()
+					// this.initSocket()
+					
+					this.getGameTable()
 					// this.showWebView()
+					return
 				}else{
 					clearTimeout(this.tableTimer)
 					this.get_table = []
@@ -100,7 +99,7 @@
 			this.socketTask = new SocketTask()
 		},
 		mounted() {
-			// this.getGameTable();
+			this.getGameTable();
 			this.needToken = uni.getStorageSync('Access-Token')
 			
 		},
@@ -179,9 +178,9 @@
 					} else {
 						// this.$tip.alert(res.data.message);
 					}
-					this.tableTimer = setTimeout(() => {
-						this.getGameTable()
-					},1000)
+					// this.tableTimer = setTimeout(() => {
+					// 	this.getGameTable()
+					// },1000)
 				})
 			},
 			// 遍历台桌状态
