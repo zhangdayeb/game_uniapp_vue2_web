@@ -1,0 +1,454 @@
+/* 基础页面样式 */
+page {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Socket状态指示器样式 */
+.socket-status {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: white;
+  font-size: 12px;
+  
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    
+    text {
+      margin-left: 4px;
+    }
+  }
+}
+
+/* 刷新动画 */
+.video-animation {
+  animation: refreshAnimation 1s linear infinite;
+}
+
+@keyframes refreshAnimation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 页面背景 */
+.live-page {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: #000;
+  overflow: hidden;
+}
+
+/* 主要布局样式 */
+.live-container {
+  height: 100vh;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 
+      55px          /* 区域1固定高度 */
+      250px         /* 区域2固定高度 */
+      28px          /* 区域3固定高度 */
+      1fr           /* 区域4自由压缩 */
+      calc(100vw * 0.36); /* 区域5保持宽高比(假设比例为5:2) */
+}
+
+/* 视频区域样式 */
+.live-box {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  max-height: 280px;
+  overflow: hidden;
+  background: #000;
+  flex-shrink: 0;
+}
+
+/* 🎯 优化后的视频容器 - 支持整体缩放效果 */
+.video-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 0.5s ease, filter 0.3s ease;
+}
+
+/* 🎯 视频层 */
+.video-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.3s ease, z-index 0.3s ease;
+}
+
+/* 🎯 激活状态的视频层 */
+.layer-active {
+  opacity: 1;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+/* 🎯 隐藏状态的视频层 - 保持加载但不显示 */
+.layer-hidden {
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* iframe样式 */
+.live-details {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #000;
+}
+
+/* 🎯 缩放效果类 */
+.normal {
+  transform: scale(1);
+}
+/* 视频缩放 */
+.opening-zoom {
+  /* 超大缩放倍数 */
+  transform: scale(1.5) !important;
+  transform-origin: center center !important;
+  
+  /* 突破容器限制 */
+  position: relative !important;
+  z-index: 9999 !important;
+  
+  /* 确保显示区域合理 */
+  overflow: visible !important;
+  
+  /* 视觉增强 */
+  filter: brightness(1.3) contrast(1.2) saturate(1.4) !important;
+  
+  /* 平滑动画 */
+  transition: all 1.2s cubic-bezier(0.23, 1, 0.320, 1) !important;
+  
+  /* 强烈的视觉效果 */
+  box-shadow: 
+    0 0 50px rgba(255, 255, 255, 0.6),
+    0 0 100px rgba(255, 255, 255, 0.4),
+    0 0 150px rgba(255, 255, 255, 0.2) !important;
+  
+  /* 边框效果 */
+  border: 4px solid rgba(255, 255, 255, 0.8) !important;
+  border-radius: 12px !important;
+}
+
+/* 🎯 切换动画优化 */
+.video-layer.layer-active {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 加载动画样式 */
+.live-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1;
+  color: white;
+}
+
+.live-loading-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+@keyframes loadingRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.live-loading-img {
+  width: 50px;
+  height: 50px;
+  animation: loadingRotate 1.2s linear infinite;
+}
+
+/* 倒计时样式 */
+.live-count-down {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 60px;
+  height: 60px;
+  z-index: 25;
+  transform: rotateY(180deg) rotateZ(180deg);
+}
+
+.live-count-second {
+  color: #78E07A;
+  font-size: 18px;
+  font-weight: bold;
+  transform: rotateZ(0deg) rotateX(-180deg);
+}
+
+.live-active-color {
+  color: red !important;
+}
+
+/* 洗牌标记样式 */
+.live-shuffle {
+  position: absolute;
+  top: 20px;
+  left: 90px;
+  color: rgba(251, 93, 86, 0.9);
+  font-size: 16px;
+  font-weight: 600;
+  z-index: 25;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* 通知消息样式 */
+.live-notice {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #000000 0%, #454141 100%);
+  color: #dac193;
+  padding: 8px 16px;
+  border-radius: 20px;
+  z-index: 99;
+  white-space: nowrap;
+  font-size: 14px;
+  animation: slideDown 500ms ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    top: -30px;
+    opacity: 0;
+  }
+  to {
+    top: 10px;
+    opacity: 1;
+  }
+}
+
+/* 🎯 视频控制按钮 - 保持原有功能，确保在视频层之上 */
+.video-controls {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 30; /* 确保在视频层之上 */
+}
+
+.control-btn {
+  width: 44px;
+  height: 44px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.9);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.control-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+/* 统计数据样式 */
+.live-result-detail {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.8);
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+  min-height: 32px;
+  
+  text {
+    color: white;
+    margin: 0 3px;
+    font-size: 12px;
+  }
+}
+
+.live-de-xian {
+  color: #2B85E4 !important;
+}
+
+.live-de-he {
+  color: #009949 !important;
+}
+
+.live-de-zhuang {
+  color: #dc1a1f !important;
+}
+
+/* 🎯 新增：在线和投注数据样式 */
+.live-online-users {
+  color: #00ff88 !important; // 绿色表示在线状态
+  font-weight: bold;
+}
+
+.live-bet-amount {
+  color: #ffaa00 !important; // 橙色表示投注金额
+  font-weight: bold;
+}
+
+/* 投注区域样式 */
+.live-bet-box {
+  position: relative;
+  flex: 1;
+  min-height: 180px;
+  background: rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+}
+
+.live-bet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  z-index: 2;
+}
+
+/* 露珠区域样式 */
+.lz_details {
+  position: relative;
+  height: 155px;
+  min-height: 155px;
+  background: rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.live-details-lz {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #000;
+  width: 100%;
+  height: 100%;
+  border: none;
+  z-index: 2;
+}
+
+/* APP端头部位置样式 */
+.for_header_postion {
+  width: 100%;
+  height: 1px;
+  padding-top: var(--status-bar-height, 0);
+  flex-shrink: 0;
+}
+
+/* 🎯 移动端优化 */
+@media screen and (max-width: 750px) {
+  .live-box {
+    height: 250px;
+    max-height: 250px;
+  }
+  
+  .opening-zoom {
+    transform: scale(1.1); /* 小屏幕适度缩放 */
+  }
+  
+  .live-result-detail {
+    font-size: 11px;
+    padding: 6px 8px;
+    min-height: 28px;
+    
+    text {
+      font-size: 10px;
+      margin: 0 2px;
+    }
+  }
+  
+  .control-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .control-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .live-count-down {
+    width: 50px;
+    height: 50px;
+    top: 15px;
+    left: 15px;
+  }
+  
+  .live-count-second {
+    font-size: 16px;
+  }
+  
+  .lz_details {
+    height: 150px;
+  }
+}
+
+/* 确保所有内容不露出背景 */
+* {
+  box-sizing: border-box;
+}
+
+.live-container > * {
+  background-color: rgba(0, 0, 0, 0.8);
+}
