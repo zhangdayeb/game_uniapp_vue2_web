@@ -620,7 +620,7 @@ export default {
           }, 1500)
         } else {
           uni.showToast({
-            title: response.message || '绑定失败',
+            title: response.data.message || '绑定失败',
             icon: 'none'
           })
         }

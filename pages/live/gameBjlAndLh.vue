@@ -825,6 +825,7 @@ export default {
 
       // 显示输赢信息
       if (result.data.result_info.money != false) {
+		console.log('🎯 收到输赢消息:', result.data.result_info)
         this.showWinMsgOpen = true
         this.showWinMsgText = `${this.liveLocales.win}：${result.data.result_info.money}`
         setTimeout(() => {
@@ -1406,8 +1407,8 @@ export default {
               this.$refs.batPlugin.sendFlag = 0
             }
             
-            // 显示开牌中消息
-            this.showMsgOpen = true
+            // 显示开牌中消息 | 暂时屏蔽 客户 要求的
+            this.showMsgOpen = false
             this.activityDescribeText = this.liveLocales.openingCard
             
             // 清除历史投注信息
