@@ -74,7 +74,7 @@
           </view>
           
           <!-- 近景视频层 - 始终加载 -->
-          <view 
+<!--          <view 
             class="video-layer" 
             :class="{
               'layer-active': videoEnlarge,
@@ -89,7 +89,7 @@
               :src="videoNear"
               @load="onVideoLoaded('near')"
             ></iframe>
-          </view>
+          </view> -->
         </view>
         
         <!-- 倒计时圈圈 -->
@@ -130,7 +130,7 @@
         <!-- 视频控制按钮 - 保持原有功能 -->
         <view class="video-controls">
           <!-- 放大缩小按钮 - 保持远景/近景切换功能 -->
-          <view class="control-btn" @click="handleZoom()">
+<!--          <view class="control-btn" @click="handleZoom()">
             <image 
               src="/static/img/live/enlarge.svg" 
               mode="" 
@@ -143,17 +143,17 @@
               v-if="videoEnlarge" 
               class="control-icon"
             />
-          </view>
+          </view> -->
           
           <!-- 刷新按钮 - 优化为仅在必要时使用 -->
-          <view class="control-btn" @tap="refreshIframe()">
+<!--          <view class="control-btn" @tap="refreshIframe()">
             <u-icon 
               :class="{'video-animation': startAnimation}" 
               name="reload" 
               color="#ffffbc" 
               size="24"
             />
-          </view>
+          </view> -->
         </view>
       </view>
       <!-- 视频显示区域 结束 -->
@@ -972,15 +972,15 @@ export default {
      * 🎯 开牌时的智能缩放效果 - 不影响切换功能
      */
     smartVideoZoom(reason = '') {
-      console.log('开牌缩放效果:', reason)
-      
-      // 添加临时缩放效果
-      this.zoomEffectClass = 'opening-zoom'
-      
-      // 8秒后恢复正常，不影响用户的切换状态  视频缩放
-      setTimeout(() => {
-        this.zoomEffectClass = 'normal'
-      }, 15000)
+	  setTimeout(() => {
+	    console.log('开牌缩放效果:', reason)	    
+	    // 添加临时缩放效果
+	    this.zoomEffectClass = 'opening-zoom'	    
+	    // 15秒后恢复正常，不影响用户的切换状态  视频缩放
+	    setTimeout(() => {
+	      this.zoomEffectClass = 'normal'
+	    }, 15000)
+	  }, 3000)
     },
 
     /**
@@ -1243,8 +1243,8 @@ export default {
       }
 	  
 	  // 倒计时28秒时执行缩放效果  视频缩放
-	  if (tableRunInfo.end_time == 2) {
-	    this.smartVideoZoom('倒计时5秒缩放')
+	  if (tableRunInfo.end_time == 1) {
+	    this.smartVideoZoom('倒计时1秒缩放')
 	  }
 
       // 3.5秒后关闭消息提示
