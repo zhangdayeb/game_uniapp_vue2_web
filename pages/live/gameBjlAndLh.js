@@ -423,8 +423,8 @@ export default {
     initDataSimulator() {
       this.dataSimulator = new GameDataSimulator({
         onlineUsers: {
-          min: 200,
-          max: 9000,
+          min: 20,
+          max: 100,
           updateCallback: (users) => {
             this.onlineUsers = users
             this.$forceUpdate()
@@ -432,7 +432,7 @@ export default {
         },
         betAmount: {
           minTarget: 0,
-          maxTarget: 200000,
+          maxTarget: 2000,
           updateCallback: (amount) => {
             this.betAmount = amount
             this.$forceUpdate()
