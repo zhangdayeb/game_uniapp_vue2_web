@@ -500,8 +500,18 @@ export default {
       
       // 检查台桌状态
       if (tableItem.status == 1) {
-        // 台桌正常，可以进入
-        this.enterGameTable(tableItem, 'web')
+        
+		if(tableItem.game_type == 9){
+			// 骰宝特殊 跳出去 需要 
+			let user_id = uni.getStorageSync('user_id')
+			let token = uni.getStorageSync('token')
+			let url = `${configService.betSicboUrl}?table_id=${tableItem.id}&game_type=${tableItem.game_type}&user_id=${user_id}&token=${token}`
+			window.location.href = url
+		}else{
+			// 台桌正常，可以进入
+			this.enterGameTable(tableItem, 'web')
+			
+		}
       } else if (tableItem.status > 1) {
         // 台桌维护中
         this.$tip.alert(this.indexLocales.underMaintenance)

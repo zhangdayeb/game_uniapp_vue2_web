@@ -26,8 +26,8 @@
 						</view>
 					</view>
 					<view class="web-box">
-						<iframe class="games-iframe" v-if="item.game_type == 2" :src="configService.lzLhUrl+ indexLocales.lzurl+'/list_lh.html?tableId=' + item.id" scrolling="yes" ></iframe>
-						<iframe class="games-iframe" v-if="item.game_type == 3" :src="configService.lzBjlUrl + indexLocales.lzurl+'/list_bjl_678.html?tableId=' + item.id" scrolling="yes" ></iframe>
+						<iframe class="games-iframe" v-if="item.game_type == 2" :src="configService.lzLhUrl +'?tableId=' + item.id" scrolling="yes" ></iframe>
+						<iframe class="games-iframe" v-if="item.game_type == 3" :src="configService.lzBjlUrl +'?tableId=' + item.id" scrolling="yes" ></iframe>
 						<iframe class="games-iframe" v-if="item.game_type == 6" :src="`${configService.lzNnUrl}?table_id=${item.id}&game_type=${item.game_type}&user_id=${userInformation.id}&show_type=list`" scrolling="yes" ></iframe>
 						<iframe class="games-iframe" v-if="item.game_type == 8" :src="`${configService.lzThreeUrl}?table_id=${item.id}&game_type=${item.game_type}&user_id=${userInformation.id}&show_type=list`" scrolling="yes" ></iframe>
 						<view class="cover">

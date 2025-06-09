@@ -440,6 +440,8 @@ export default {
           if (res.data.code == 200) {
             uni.setStorageSync('login_user_info', res.data.data)
             uni.setStorageSync('Access-Token', res.data.data.token)
+			uni.setStorageSync('user_id', res.data.data.id);
+			uni.setStorageSync('token', res.data.data.token);
             this.languageUpdate()
           } else {
             this.$tip.alert(res.data)
@@ -544,34 +546,48 @@ export default {
      * 设置登录语言面板的点击监听（仅H5）
      * 点击面板外部时关闭语言选择面板
      */
-    setLoginLocales() {
-      let dom = document.getElementById("login")
-      dom.addEventListener('click', (e) => {
-        if (e.stopPropagation) {
-          e.stopPropagation()
-        }
-        
-        let ev = e || window.event
-        let elem = ev.target || ev.srcElement
-        
-        let b = false
-        while (elem) {
-          if (elem.id && (elem.id === 'login-selected' || elem.id === 'login-locales')) {
-            b = true
-            return
-          }
-          elem = elem.parentNode
-          if (elem && elem.id && elem.id === 'login-locales') {
-            b = true
-            return
-          }
-        }
-        
-        if (!b) {
-          this.openLocalesPanel = false
-        }
-              })
-    },
+setLoginLocales() {
+  // 方法1：添加安全检查
+  const dom = document.getElementById("login");
+  
+  // 检查元素是否存在
+  if (!dom) {
+    console.warn('Element with id "login" not found');
+    return;
+  }
+  
+  // 检查是否支持 addEventListener
+  if (typeof dom.addEventListener !== 'function') {
+    console.warn('Element does not support addEventListener');
+    return;
+  }
+  
+  dom.addEventListener('click', (e) => {
+    if (e.stopPropagation) {
+      e.stopPropagation();
+    }
+    
+    let ev = e || window.event;
+    let elem = ev.target || ev.srcElement;
+    
+    let b = false;
+    while (elem) {
+      if (elem.id && (elem.id === 'login-selected' || elem.id === 'login-locales')) {
+        b = true;
+        return;
+      }
+      elem = elem.parentNode;
+      if (elem && elem.id && elem.id === 'login-locales') {
+        b = true;
+        return;
+      }
+    }
+    
+    if (!b) {
+      this.openLocalesPanel = false;
+    }
+  });
+},
     
     // ========== 工具方法 ==========
     

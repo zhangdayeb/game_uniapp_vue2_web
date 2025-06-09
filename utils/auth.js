@@ -18,7 +18,8 @@ class AuthManager {
       
       // 保存到本地存储
       uni.setStorageSync('user_id', this.userId);
-      uni.setStorageSync('token', this.token);
+      uni.setStorageSync('token', this.token); // Access-Token
+	  uni.setStorageSync('Access-Token', this.token);
       
       console.log('从URL获取登录信息:', {
         userId: this.userId,
@@ -96,6 +97,7 @@ class AuthManager {
     // 清除本地存储
     uni.removeStorageSync('user_id');
     uni.removeStorageSync('token');
+	uni.removeStorageSync('Access-Token');
     
     console.log('已清除登录状态');
   }

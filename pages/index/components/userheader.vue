@@ -75,6 +75,8 @@
 						uni.removeStorage('password')
 						uni.removeStorage('login_user_info')
 						uni.removeStorage('Access-Token')
+						uni.removeStorage('user_id')
+						uni.removeStorage('token')
 						uni.redirectTo({
 							url:"/pages/login/login"
 						})

@@ -111,7 +111,6 @@
 		},
 		data() {
 			return {
-				timeSub: 0,
 				image: '',
 				loadingImg: '/static/img/user/header.png',
 				errorImg: '/static/img/user/header.png',
@@ -135,9 +134,6 @@
 		onShow(){
 			let this_ = this
 			this.getNoticeList()
-			let runTimer = setInterval(function(){
-				this_.timeSub = '退出倒计时：'+ parseInt( Number((600000 -  uni.getStorageSync('timeSub')) / 1000) )+ ' 秒'
-			},1000)
 		},
 		mounted() {
 			this.getUserinfo();
@@ -226,7 +222,6 @@
 						if (res.confirm) {
 							// 清除当前用户登录状态，但保留登录历史
 							uni.removeStorageSync('login_user_info');
-							uni.removeStorageSync('timeSub');
 							
 							// 跳转到登录页面，可以选择其他账号登录
 							uni.reLaunch({
@@ -257,7 +252,6 @@
 						if (res.confirm) {
 							// 清除所有登录相关的本地存储
 							uni.removeStorageSync('login_user_info');
-							uni.removeStorageSync('timeSub');
 							uni.removeStorageSync('token');
 							uni.removeStorageSync('user_id');
 							

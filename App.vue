@@ -9,22 +9,12 @@
 			}
 		},
 		onLaunch: function(options) {
-			console.log('App Launch', options);
 			// 应用启动时初始化登录状态
 			this.initAuth();
 		},
 		onShow: function(options) {
-			console.log('App Show', options);			
 			// 应用显示时也检查登录状态
 			this.checkAuthStatus();	
-			// #ifdef H5
-			// 此处增加 h5 手机网页 操作时间检测 超过多少秒，自动退出 
-			window.addEventListener("click", () => {
-				// 开始 处理 多长没有动作 时间后 自动 退出功能 开始
-				uni.setStorageSync('loginStartTime',new Date().getTime())
-				// 开始 处理 多长没有动作 时间后 自动 退出功能 结束
-			}, true);
-			//#endif
 		},
 		onHide: function() {
 			
@@ -83,29 +73,6 @@
 				url: '/pages/login/login'
 			  });
 			},
-			/**
-			 * app js 检测是否 登录 | 暂时放弃
-			 */
-			checkInLoginApp(){
-				this.checkTimer = setInterval(() => {
-					let routes = getCurrentPages()
-					let curRoute = routes[routes.length - 1].route
-					if(curRoute == 'pages/login/login' || curRoute == 'pages/maintain/maintain' || curRoute == 'pages/login/register') {
-						return
-					}else{
-						let userInformation = uni.getStorageSync('login_user_info')
-						let postData = {token: userInformation.token}
-						api.getUserOnline(postData).then((res) => {
-							if(res == undefined || res.data.code == 1){
-								uni.navigateTo({
-									url: '/pages/login/login'
-								})
-								this.$forceUpdate()
-							}
-						})
-					}
-				}, 10000)
-			}
 		}
 	}
 </script>
