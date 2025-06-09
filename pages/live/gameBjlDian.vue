@@ -203,12 +203,12 @@
 			// 兼容龙虎 游戏处理
 			if(option.game_type_id == 3){
 				// 百家乐 防止其它特殊针对性的 更新
-				this.lzUrl = configService.lzBjlUrlMain + this.liveLocales.lzurl + '/lucky6_type2_diantou_v2.html'
+				this.lzUrl = configService.lzBjlUrlDianTou
 				// this.welcomeMsg = this.liveLocales.welcomeBaccarat  
 				// this.audioHandle.audioPath = 'bjl'
 			}
 			if(option.game_type_id == 2){
-				this.lzUrl = configService.lzLhUrlMain + this.liveLocales.lzurl + '/lh_diantou.html'
+				this.lzUrl = configService.lzLhUrlDianTou
 				// 龙虎 防止其它特殊针对性的 更新
 				// this.lzUrl = configService.lzLhUrlMain
 				// this.welcomeMsg = this.liveLocales.welcomeLongHu

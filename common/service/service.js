@@ -11,7 +11,6 @@ const serviceName = {
 	cattleUrl: '/cattle',
 	userUrl: '/user'
 }
-let apiUrl = configService.apiUrl;
 
 const getTokenStorage = () => {
 	let token = ''

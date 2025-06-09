@@ -5,9 +5,11 @@ import tip from'./common/util/tip.js'
 import OtherPlace from '@/components/otherPlace'
 import Maintain from '@/components/maintain/maintain.vue'
 import maintainState from '@/common/service/maintainState'
+import authManager from './utils/auth.js'
 
 App.mpType = 'app';						// 基础程序类型设置 为了区分小程序 与 大程序
 Vue.config.productionTip = false;		// 类型提示
+
 
 
 
@@ -20,6 +22,7 @@ Vue.prototype.$tip=tip;			// tip 普通提示
 Vue.prototype.$version= `1.2.28 © Copyright 2020-2022`;			// 版本号
 Vue.prototype.$maintainState = maintainState  //维护状态
 Vue.prototype.$WEB_MAINTAIN_STATE = '1' //维护状态 1维护中
+Vue.prototype.$auth = authManager;
 
 // 引入全局uView
 import uView from 'uview-ui';

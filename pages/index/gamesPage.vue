@@ -142,14 +142,14 @@
                   <iframe 
                     class="games-iframe" 
                     v-if="tableItem.game_type == 2" 
-                    :src="configService.lzLhUrl + indexLocales.lzurl + '/list_lh.html?tableId=' + tableItem.id" 
+                    :src="configService.lzLhUrl + '?tableId=' + tableItem.id" 
                     scrolling="yes"
                   />
                   <!-- 百家乐游戏路珠 -->
                   <iframe 
                     class="games-iframe" 
                     v-if="tableItem.game_type == 3" 
-                    :src="configService.lzBjlUrl + indexLocales.lzurl + '/list_bjl_678.html?tableId=' + tableItem.id" 
+                    :src="configService.lzBjlUrl + '?tableId=' + tableItem.id" 
                     scrolling="yes"
                   />
                   <!-- 牛牛游戏路珠 -->
@@ -166,6 +166,14 @@
                     :src="`${configService.lzThreeUrl}?table_id=${tableItem.id}&game_type=${tableItem.game_type}&user_id=${userInformation.id}&show_type=list`" 
                     scrolling="yes"
                   />
+				  <!-- 骰宝游戏路珠 -->
+				  <iframe 
+				    class="games-iframe" 
+				    v-if="tableItem.game_type == 9" 
+				    :src="`${configService.lzSicboUrl}?table_id=${tableItem.id}&game_type=${tableItem.game_type}&user_id=${userInformation.id}&show_type=list`" 
+				    scrolling="yes"
+				  />
+				  
 
                   <!-- 台桌状态覆盖层 -->
                   <view class="cover">

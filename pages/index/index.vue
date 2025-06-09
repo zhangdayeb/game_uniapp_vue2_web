@@ -127,7 +127,8 @@
             // 组件跳转
             setPage(game_type_id) {
 				this.pageNo = 0
-                this.game_type_id = game_type_id
+				this.game_type_id = game_type_id
+				
             },
             // 加载组件的相关事件
             close: function() {

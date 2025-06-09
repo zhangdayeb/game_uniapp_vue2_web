@@ -121,10 +121,10 @@ export default {
     
     // 根据游戏类型设置露珠URL
     if (option.game_type_id == 3) {
-      this.lzUrl = configService.lzBjlUrlMain + this.liveLocales.lzurl + '/bjl_xc_big_678.html'
+      this.lzUrl = configService.lzBjlUrlMain
     }
     if (option.game_type_id == 2) {
-      this.lzUrl = configService.lzLhUrlMain + this.liveLocales.lzurl + '/lh_bet_xc.html'
+      this.lzUrl = configService.lzLhUrlMain
     }
     
     // 初始化Safari视口修复器 - 新增
